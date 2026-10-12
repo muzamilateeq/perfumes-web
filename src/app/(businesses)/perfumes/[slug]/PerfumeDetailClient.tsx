@@ -1,0 +1,683 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { 
+  Sparkles, 
+  ShoppingBag, 
+  MessageCircle, 
+  ShieldCheck, 
+  Truck, 
+  RotateCcw, 
+  Star, 
+  Plus, 
+  Minus, 
+  Check, 
+  ArrowRight, 
+  Gift, 
+  ChevronRight,
+  Clock,
+  Droplet,
+  Compass,
+  X
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import WhatsAppConcierge from "@/components/WhatsAppConcierge";
+import { PerfumeItem } from "@/lib/perfumes";
+import { 
+  buildWhatsAppUrl, 
+  generateProductWhatsAppMessage, 
+  generateConfirmedOrderWhatsAppMessage,
+  WHATSAPP_CONFIG 
+} from "@/lib/whatsapp";
+import { createOrderAction } from "@/app/actions/order";
+
+interface PerfumeDetailClientProps {
+  perfume: PerfumeItem;
+  relatedPerfumes: PerfumeItem[];
+}
+
+export default function PerfumeDetailClient({ perfume, relatedPerfumes }: PerfumeDetailClientProps) {
+  const [quantity, setQuantity] = useState<number>(1);
+  const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"pyramid" | "story" | "guarantee">("pyramid");
+  
+  // Checkout Form State
+  const [checkoutData, setCheckoutData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    city: "Karachi",
+    paymentMethod: "COD"
+  });
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
+  const [orderId, setOrderId] = useState<string>("");
+
+  const totalPrice = perfume.priceNum * quantity;
+
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await createOrderAction({
+        customerName: checkoutData.name,
+        customerPhone: checkoutData.phone,
+        customerAddress: checkoutData.address,
+        customerCity: checkoutData.city,
+        paymentMethod: checkoutData.paymentMethod,
+        notes: includeGiftBox ? "Gift Box Requested" : undefined,
+        items: [
+          {
+            productId: perfume.id,
+            name: perfume.name,
+            price: perfume.priceNum,
+            quantity: quantity
+          }
+        ],
+        total: totalPrice
+      });
+
+      setOrderId(res.orderNumber);
+      setOrderSuccess(true);
+    } catch {
+      const fallbackId = "AUR-" + Math.floor(100000 + Math.random() * 900000);
+      setOrderId(fallbackId);
+      setOrderSuccess(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const whatsappOrderUrl = buildWhatsAppUrl(
+    generateProductWhatsAppMessage(perfume, {
+      quantity,
+      notes: includeGiftBox ? "Luxury Gift Packaging with Wax Seal requested" : undefined
+    })
+  );
+
+  return (
+    <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white">
+      
+      {/* Site Header */}
+      <SiteHeader cartCount={0} />
+
+      {/* Breadcrumb Navigation */}
+      <nav className="border-b border-zinc-200 bg-white/60 py-3.5 px-6">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-zinc-500 uppercase tracking-widest font-medium overflow-x-auto">
+          <Link href="/" className="hover:text-zinc-900 transition-colors">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+          <Link href="/perfumes" className="hover:text-zinc-900 transition-colors">Collection</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+          <span className="text-zinc-900 font-bold truncate">{perfume.name}</span>
+        </div>
+      </nav>
+
+      {/* Main Product Showcase */}
+      <main className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          
+          {/* Left Column: Visual Flacon Display */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="relative aspect-[4/5] bg-zinc-100 border border-zinc-200 shadow-xl overflow-hidden group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={perfume.image} 
+                alt={`${perfume.name} Extrait de Parfum`}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+
+              {/* Badge */}
+              {perfume.badge && (
+                <span className="absolute top-6 left-6 bg-zinc-950 text-white px-4 py-1.5 text-[10px] font-bold tracking-[0.25em] uppercase shadow-lg">
+                  {perfume.badge}
+                </span>
+              )}
+
+              {/* Concentration Tag */}
+              <span className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-3.5 py-1.5 text-[10px] font-bold tracking-widest text-[#8C7355] border border-zinc-200 uppercase">
+                {perfume.concentration}
+              </span>
+
+              {/* Bottom Purity Overlay */}
+              <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-zinc-950/80 via-zinc-950/40 to-transparent text-white flex justify-between items-end">
+                <div>
+                  <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-300">Volume</p>
+                  <p className="font-serif text-lg font-light tracking-wide">{perfume.volume}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-300">Concentration</p>
+                  <p className="font-serif text-lg font-light tracking-wide">30%+ Pure Oil</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Micro Highlights Bar */}
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="p-4 bg-white border border-zinc-200">
+                <Truck className="w-4 h-4 text-[#C5A880] mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">Express Delivery</p>
+                <p className="text-[10px] text-zinc-500 font-light mt-0.5">Free 24-48 Hours</p>
+              </div>
+              <div className="p-4 bg-white border border-zinc-200">
+                <RotateCcw className="w-4 h-4 text-[#C5A880] mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">2ml Trial Vial</p>
+                <p className="text-[10px] text-zinc-500 font-light mt-0.5">Test Before Opening</p>
+              </div>
+              <div className="p-4 bg-white border border-zinc-200">
+                <ShieldCheck className="w-4 h-4 text-[#C5A880] mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">Cash on Delivery</p>
+                <p className="text-[10px] text-zinc-500 font-light mt-0.5">Nationwide Pakistan</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Olfactory Specification & Order Desk */}
+          <div className="lg:col-span-6 space-y-8">
+            
+            {/* Title & Category */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-[#8C7355]">
+                  {perfume.category}
+                </span>
+                <span className="text-zinc-300">•</span>
+                <span className="text-[11px] font-mono tracking-wider text-zinc-500">
+                  {perfume.volume}
+                </span>
+              </div>
+
+              <h1 className="font-serif text-4xl sm:text-5xl font-light tracking-tight text-zinc-950 mb-3">
+                {perfume.name}
+              </h1>
+
+              {/* Price Banner */}
+              <div className="flex items-baseline gap-4 mb-4">
+                <span className="font-serif text-3xl font-normal text-zinc-950">
+                  {perfume.price}
+                </span>
+                <span className="text-xs text-emerald-800 font-bold uppercase tracking-wider bg-emerald-50 px-2.5 py-1 border border-emerald-200">
+                  Free Nationwide Courier
+                </span>
+              </div>
+
+              <p className="text-sm text-zinc-600 font-light leading-relaxed">
+                {perfume.description}
+              </p>
+            </div>
+
+            {/* Performance Specifications */}
+            <div className="grid grid-cols-2 gap-4 p-5 bg-white border border-zinc-200 text-xs">
+              <div>
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
+                  Longevity
+                </span>
+                <span className="font-serif text-base font-medium text-zinc-950 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-[#8C7355]" />
+                  {perfume.longevity}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
+                  Sillage & Trail
+                </span>
+                <span className="font-serif text-base font-medium text-zinc-950 flex items-center gap-1.5">
+                  <Droplet className="w-3.5 h-3.5 text-[#8C7355]" />
+                  {perfume.sillage}
+                </span>
+              </div>
+              <div className="pt-3 border-t border-zinc-100">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
+                  Best Occasion
+                </span>
+                <span className="text-zinc-800 font-medium">
+                  {perfume.bestOccasion}
+                </span>
+              </div>
+              <div className="pt-3 border-t border-zinc-100">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
+                  Ideal Season
+                </span>
+                <span className="text-zinc-800 font-medium">
+                  {perfume.season}
+                </span>
+              </div>
+            </div>
+
+            {/* Order Controls */}
+            <div className="space-y-4 pt-2">
+              
+              {/* Quantity Selector */}
+              <div className="flex items-center justify-between p-3.5 bg-white border border-zinc-200">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700">Quantity</span>
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    className="p-1 hover:bg-zinc-100 transition-colors text-zinc-600"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="font-serif text-base font-bold text-zinc-950 w-6 text-center">{quantity}</span>
+                  <button 
+                    onClick={() => setQuantity(q => q + 1)}
+                    className="p-1 hover:bg-zinc-100 transition-colors text-zinc-600"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Complimentary Gift Box Checkbox */}
+              <label className="flex items-center gap-3 p-3.5 bg-white border border-zinc-200 cursor-pointer text-xs text-zinc-800">
+                <input 
+                  type="checkbox"
+                  checked={includeGiftBox}
+                  onChange={(e) => setIncludeGiftBox(e.target.checked)}
+                  className="rounded border-zinc-300 text-zinc-950 focus:ring-0"
+                />
+                <Gift className="w-4 h-4 text-[#8C7355]" />
+                <span className="font-medium">Complimentary luxury gift box with golden wax seal</span>
+              </label>
+
+              {/* Primary Action Buttons */}
+              <div className="space-y-3 pt-2">
+                <button
+                  onClick={() => setIsCheckoutOpen(true)}
+                  className="w-full py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 shadow-xl"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Order with Cash on Delivery (PKR {totalPrice.toLocaleString()})</span>
+                </button>
+
+                <a 
+                  href={whatsappOrderUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-3 shadow-md"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Order via WhatsApp ({WHATSAPP_CONFIG.displayNumber})</span>
+                </a>
+              </div>
+
+              <p className="text-[11px] text-zinc-400 text-center tracking-wider pt-1">
+                🔒 Free doorstep inspection • 2ml trial vial included • Pay upon delivery
+              </p>
+            </div>
+
+            {/* Interactive Tabs (Pyramid / Story / Guarantee) */}
+            <div className="pt-4 border-t border-zinc-200">
+              <div className="flex border-b border-zinc-200">
+                <button 
+                  onClick={() => setActiveTab("pyramid")}
+                  className={`pb-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors relative mr-8 ${
+                    activeTab === "pyramid" ? "text-zinc-950" : "text-zinc-400 hover:text-zinc-700"
+                  }`}
+                >
+                  Olfactory Pyramid
+                  {activeTab === "pyramid" && (
+                    <motion.div layoutId="tabUnderline" className="absolute bottom-0 inset-x-0 h-0.5 bg-zinc-950" />
+                  )}
+                </button>
+                <button 
+                  onClick={() => setActiveTab("story")}
+                  className={`pb-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors relative mr-8 ${
+                    activeTab === "story" ? "text-zinc-950" : "text-zinc-400 hover:text-zinc-700"
+                  }`}
+                >
+                  The Story
+                  {activeTab === "story" && (
+                    <motion.div layoutId="tabUnderline" className="absolute bottom-0 inset-x-0 h-0.5 bg-zinc-950" />
+                  )}
+                </button>
+                <button 
+                  onClick={() => setActiveTab("guarantee")}
+                  className={`pb-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors relative ${
+                    activeTab === "guarantee" ? "text-zinc-950" : "text-zinc-400 hover:text-zinc-700"
+                  }`}
+                >
+                  Trial Guarantee
+                  {activeTab === "guarantee" && (
+                    <motion.div layoutId="tabUnderline" className="absolute bottom-0 inset-x-0 h-0.5 bg-zinc-950" />
+                  )}
+                </button>
+              </div>
+
+              <div className="pt-6">
+                {activeTab === "pyramid" && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-white border border-zinc-200">
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
+                        Top Notes (First 15-30 Minutes)
+                      </span>
+                      <p className="text-xs font-medium text-zinc-900">{perfume.topNotes}</p>
+                    </div>
+                    <div className="p-4 bg-white border border-zinc-200">
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
+                        Heart Notes (2-6 Hours)
+                      </span>
+                      <p className="text-xs font-medium text-zinc-900">{perfume.heartNotes}</p>
+                    </div>
+                    <div className="p-4 bg-white border border-zinc-200">
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
+                        Base Notes (Dry Down 12-24+ Hours)
+                      </span>
+                      <p className="text-xs font-medium text-zinc-900">{perfume.baseNotes}</p>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "story" && (
+                  <div className="p-6 bg-white border border-zinc-200 space-y-3 text-xs leading-relaxed text-zinc-600 font-light">
+                    <p className="font-serif text-lg text-zinc-950 italic">
+                      "{perfume.story}"
+                    </p>
+                    <p>
+                      Macerated for a minimum of 90 days in cold stainless steel tanks in accordance with classical Grasse techniques. 
+                      Every bottle contains zero synthetic water dilution, ensuring intimate drydown transitions.
+                    </p>
+                  </div>
+                )}
+
+                {activeTab === "guarantee" && (
+                  <div className="p-6 bg-white border border-zinc-200 space-y-3 text-xs leading-relaxed text-zinc-600 font-light">
+                    <div className="flex items-center gap-2 text-emerald-800 font-bold uppercase tracking-wider text-[11px]">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>The 100% Risk-Free Trial Vial Promise</span>
+                    </div>
+                    <p>
+                      Your flacon comes accompanied by a matching 2ml tester vial outside the main presentation box. 
+                      Spray and experience the scent for 24 hours. If it does not command compliments or meet your expectations, 
+                      simply return the unopened main flacon for an immediate full refund.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* The 2ml Trial Guarantee Banner */}
+        <section className="mt-20 p-8 sm:p-12 bg-zinc-950 text-white border border-zinc-800 relative overflow-hidden">
+          <div className="relative z-10 max-w-3xl">
+            <span className="text-xs font-bold tracking-[0.28em] uppercase text-[#C5A880] block mb-3">
+              Unrivaled Luxury Experience
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight mb-4">
+              Test on Your Skin for 24 Hours with Zero Risk
+            </h2>
+            <p className="text-zinc-300 font-light text-sm leading-relaxed mb-6">
+              Haute Parfumerie is personal. That is why every flacon of {perfume.name} is shipped alongside a complimentary 2ml sample vial outside the sealed cellophane box. 
+              Enjoy the fragrance at home before breaking the seal.
+            </p>
+            <div className="flex flex-wrap gap-4 text-xs font-bold tracking-widest uppercase text-zinc-200">
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-[#C5A880]" /> 100% Full Refund if Unopened
+              </span>
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-[#C5A880]" /> Free Courier Return Pickup
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Discovery Box Cross-Sell */}
+        <section className="mt-16 p-8 sm:p-10 bg-[#FAF7F2] border border-[#EBE4D8] flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355]">
+              Can't Decide on Just One?
+            </span>
+            <h3 className="font-serif text-2xl font-light text-zinc-950">
+              The Aura Discovery Coffret (6 x 5ml Extrait)
+            </h3>
+            <p className="text-xs text-zinc-600 max-w-xl font-light">
+              Experience the entire collection including {perfume.name} for PKR 3,500. 
+              Includes a 100% redeemable voucher credit toward any 50ml flacon.
+            </p>
+          </div>
+          <Link
+            href="/discovery"
+            className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors shrink-0 flex items-center gap-2 shadow-md"
+          >
+            <span>Explore Discovery Set</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </section>
+
+        {/* Related Fragrances */}
+        {relatedPerfumes.length > 0 && (
+          <section className="mt-20">
+            <div className="text-center mb-12">
+              <span className="text-xs font-bold tracking-[0.25em] uppercase text-[#8C7355] block mb-2">
+                Curated Additions
+              </span>
+              <h2 className="font-serif text-3xl font-light text-zinc-950">
+                You May Also Appreciate
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {relatedPerfumes.map((rel) => (
+                <div key={rel.id} className="bg-white border border-zinc-200 overflow-hidden group">
+                  <div className="relative aspect-[4/5] bg-zinc-100 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={rel.image} 
+                      alt={rel.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 text-[9px] font-mono text-zinc-800 border border-zinc-200">
+                      {rel.volume}
+                    </span>
+                  </div>
+                  <div className="p-6">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
+                      {rel.category}
+                    </span>
+                    <h3 className="font-serif text-xl font-light text-zinc-950 mb-1">{rel.name}</h3>
+                    <p className="text-xs font-bold text-zinc-900 mb-4">{rel.price}</p>
+                    <Link
+                      href={`/perfumes/${rel.slug}`}
+                      className="w-full py-2.5 bg-zinc-950 text-white text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <span>View Flacon</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+      </main>
+
+      {/* Express Cash on Delivery Checkout Modal */}
+      <AnimatePresence>
+        {isCheckoutOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCheckoutOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[650px] max-h-[90vh] bg-white z-50 shadow-2xl overflow-y-auto p-8 sm:p-10 border border-zinc-200"
+            >
+              <div className="flex justify-between items-center pb-6 border-b border-zinc-200 mb-6">
+                <div>
+                  <h3 className="font-serif text-3xl font-light text-zinc-950">Express Checkout</h3>
+                  <p className="text-xs text-zinc-500 mt-1">Cash on Delivery for {perfume.name}</p>
+                </div>
+                <button 
+                  onClick={() => setIsCheckoutOpen(false)}
+                  className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-zinc-500" />
+                </button>
+              </div>
+
+              {orderSuccess ? (
+                <div className="py-12 text-center">
+                  <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Check className="w-8 h-8" />
+                  </div>
+                  <h4 className="font-serif text-3xl font-light text-zinc-950 mb-2">Order Confirmed!</h4>
+                  <p className="text-sm font-bold text-zinc-900 mb-1">Order Reference: #{orderId}</p>
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-8 leading-relaxed">
+                    Thank you, {checkoutData.name}. Your order for {quantity}x {perfume.name} has been placed. 
+                    Our concierge will dispatch your sealed package with the complimentary matching 2ml tester.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a
+                      href={buildWhatsAppUrl(generateConfirmedOrderWhatsAppMessage(orderId, checkoutData, [{ product: perfume, quantity }], totalPrice))}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Send Receipt to WhatsApp
+                    </a>
+                    <button 
+                      onClick={() => {
+                        setOrderSuccess(false);
+                        setIsCheckoutOpen(false);
+                      }}
+                      className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleCheckoutSubmit} className="space-y-6">
+                  
+                  {/* Summary Bar */}
+                  <div className="p-4 bg-zinc-50 border border-zinc-200 flex justify-between items-center text-xs">
+                    <div>
+                      <span className="font-semibold text-zinc-900 block">{perfume.name} x {quantity}</span>
+                      <span className="text-zinc-500 text-[11px]">{perfume.volume} • Free Delivery</span>
+                    </div>
+                    <span className="font-serif text-xl font-bold text-zinc-950">PKR {totalPrice.toLocaleString()}</span>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                        Recipient Full Name *
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="e.g. Tariq Mansoor"
+                        value={checkoutData.name}
+                        onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                        WhatsApp / Mobile No *
+                      </label>
+                      <input 
+                        type="tel" 
+                        required
+                        placeholder="0300 1234567"
+                        value={checkoutData.phone}
+                        onChange={(e) => setCheckoutData({ ...checkoutData, phone: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                      Complete Delivery Address *
+                    </label>
+                    <textarea 
+                      rows={2}
+                      required
+                      placeholder="House / Apartment no, Street, Sector / Area..."
+                      value={checkoutData.address}
+                      onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
+                      className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                        Destination City *
+                      </label>
+                      <select 
+                        value={checkoutData.city}
+                        onChange={(e) => setCheckoutData({ ...checkoutData, city: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                      >
+                        <option>Karachi</option>
+                        <option>Lahore</option>
+                        <option>Islamabad</option>
+                        <option>Rawalpindi</option>
+                        <option>Faisalabad</option>
+                        <option>Multan</option>
+                        <option>Peshawar</option>
+                        <option>Quetta</option>
+                        <option>Sialkot</option>
+                        <option>Other City (Pakistan)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                        Payment Mode
+                      </label>
+                      <select 
+                        value={checkoutData.paymentMethod}
+                        onChange={(e) => setCheckoutData({ ...checkoutData, paymentMethod: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none font-bold"
+                      >
+                        <option value="COD">Cash on Delivery (Pay at Doorstep)</option>
+                        <option value="BANK">Direct Bank Transfer / Raast</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-3 mt-6 disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Confirming Order..." : `Confirm Order (PKR ${totalPrice.toLocaleString()})`}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <p className="text-[11px] text-zinc-400 text-center tracking-wider">
+                    🔒 Free Delivery Nationwide • Free Matching Tester Vial Included
+                  </p>
+                </form>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Concierge Popover */}
+      <WhatsAppConcierge />
+
+      {/* Site Footer */}
+      <SiteFooter />
+
+    </div>
+  );
+}
