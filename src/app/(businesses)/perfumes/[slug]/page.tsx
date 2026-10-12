@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPerfumeBySlug, getAllPerfumes, PERFUMES_DATA } from "@/lib/perfumes";
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PerfumeDetailPage({ params }: PageProps) {
+async function PerfumeContent({ params }: PageProps) {
   const { slug } = await params;
   const perfume = getPerfumeBySlug(slug);
 
@@ -51,12 +52,29 @@ export default async function PerfumeDetailPage({ params }: PageProps) {
   }
 
   const allPerfumes = getAllPerfumes();
-  const relatedPerfumes = allPerfumes.filter((p) => p.slug !== perfume.slug).slice(0, 3);
+  const relatedPerfumes = allPerfumes.filter((p) => p.slug !== perfume.slug).slice(0, 4);
 
   return (
     <PerfumeDetailClient 
       perfume={perfume} 
       relatedPerfumes={relatedPerfumes} 
     />
+  );
+}
+
+export default function PerfumeDetailPage({ params }: PageProps) {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-[#FBFBF9] flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="w-8 h-8 border-2 border-[#8C7355] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="font-serif text-sm tracking-widest uppercase text-[#8C7355]">Preparing Flacon...</p>
+          </div>
+        </div>
+      }
+    >
+      <PerfumeContent params={params} />
+    </Suspense>
   );
 }

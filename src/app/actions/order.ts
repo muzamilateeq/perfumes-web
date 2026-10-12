@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { saveStoreOrder, getStoreOrders, StoreOrder } from "@/lib/storeManager";
 
 export interface OrderInput {
   customerName: string;
@@ -19,11 +20,28 @@ export interface OrderInput {
 }
 
 export async function createOrderAction(data: OrderInput) {
-  try {
-    const generatedOrderNumber = "AUR-" + Math.floor(100000 + Math.random() * 900000);
+  const generatedOrderNumber = "AUR-" + Math.floor(100000 + Math.random() * 900000);
 
-    // Save to Prisma database if connection exists
-    const newOrder = await prisma.order.create({
+  // 1. Always record in Store Manager (Instant, reliable on-disk & admin accessible)
+  const storeOrderRecord: StoreOrder = {
+    id: "ord-" + Date.now(),
+    orderNumber: generatedOrderNumber,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone,
+    customerAddress: data.customerAddress,
+    customerCity: data.customerCity,
+    paymentMethod: data.paymentMethod || "COD",
+    notes: data.notes || undefined,
+    total: data.total,
+    status: "PENDING",
+    items: data.items,
+    createdAt: new Date().toISOString(),
+  };
+  saveStoreOrder(storeOrderRecord);
+
+  // 2. Also try Prisma Database if available
+  try {
+    await prisma.order.create({
       data: {
         orderNumber: generatedOrderNumber,
         customerName: data.customerName,
@@ -36,35 +54,66 @@ export async function createOrderAction(data: OrderInput) {
         status: "PENDING",
       },
     });
-
-    return {
-      success: true,
-      orderNumber: newOrder.orderNumber,
-      message: "Order placed successfully!",
-    };
   } catch (error: any) {
-    console.error("Order creation database notice:", error?.message);
-    
-    // Fallback: If DB is not connected yet, still generate order number for client
-    const fallbackId = "AUR-" + Math.floor(100000 + Math.random() * 900000);
-    return {
-      success: true,
-      orderNumber: fallbackId,
-      warning: "Database not connected yet, recorded locally.",
-    };
+    console.warn("Prisma sync notice (order saved to storeManager):", error?.message);
   }
+
+  return {
+    success: true,
+    orderNumber: generatedOrderNumber,
+    message: "Order placed successfully!",
+  };
 }
 
 export async function trackOrderAction(query: string) {
-  try {
-    const cleanQuery = query.trim();
-    if (!cleanQuery) return { success: false, message: "Please provide an order reference or phone number." };
+  const cleanQuery = query.trim().toUpperCase();
+  if (!cleanQuery) return { success: false, message: "Please provide an order reference or phone number." };
 
+  const rawDigits = query.replace(/\D/g, "");
+
+  // 1. Check Store Manager
+  const localOrders = getStoreOrders();
+  const matchedLocal = localOrders.find((o) => {
+    // Match by full Order Number (e.g. AUR-928104) or digits only (e.g. 928104)
+    if (o.orderNumber.toUpperCase() === cleanQuery) return true;
+    const orderDigits = o.orderNumber.replace(/\D/g, "");
+    if (rawDigits.length >= 5 && orderDigits === rawDigits) return true;
+
+    // Match by Phone Number (handles 03001234567, +923001234567, 0300 1234567)
+    const oPhoneDigits = o.customerPhone.replace(/\D/g, "");
+    if (rawDigits.length >= 7 && (oPhoneDigits.includes(rawDigits) || rawDigits.includes(oPhoneDigits))) {
+      return true;
+    }
+    return o.customerPhone.includes(query.trim());
+  });
+
+  if (matchedLocal) {
+    return {
+      success: true,
+      order: {
+        orderNumber: matchedLocal.orderNumber,
+        customerName: matchedLocal.customerName,
+        customerPhone: matchedLocal.customerPhone,
+        customerAddress: matchedLocal.customerAddress,
+        customerCity: matchedLocal.customerCity,
+        paymentMethod: matchedLocal.paymentMethod,
+        total: matchedLocal.total,
+        status: matchedLocal.status,
+        items: matchedLocal.items || [],
+        notes: matchedLocal.notes || null,
+        trackingNumber: "TRX-" + matchedLocal.orderNumber.replace(/[^0-9]/g, "") + "94",
+        createdAt: matchedLocal.createdAt,
+      },
+    };
+  }
+
+  // 2. Check Prisma Database
+  try {
     const order = await prisma.order.findFirst({
       where: {
         OR: [
-          { orderNumber: { equals: cleanQuery, mode: "insensitive" } },
-          { customerPhone: { contains: cleanQuery } },
+          { orderNumber: { equals: query.trim(), mode: "insensitive" } },
+          { customerPhone: { contains: query.trim() } },
         ],
       },
       include: {
@@ -72,43 +121,33 @@ export async function trackOrderAction(query: string) {
       },
     });
 
-    if (!order) {
+    if (order) {
       return {
-        success: false,
-        message: "No order found with this reference number. Please verify or contact our WhatsApp concierge.",
+        success: true,
+        order: {
+          orderNumber: order.orderNumber,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          customerAddress: order.customerAddress,
+          customerCity: order.customerCity,
+          paymentMethod: order.paymentMethod,
+          total: Number(order.total),
+          status: order.status,
+          items: order.items || [],
+          notes: order.notes || null,
+          trackingNumber: order.trackingNumber || "TRX-" + Math.floor(10000000 + Math.random() * 90000000),
+          createdAt: order.createdAt.toISOString(),
+        },
       };
     }
-
-    return {
-      success: true,
-      order: {
-        orderNumber: order.orderNumber,
-        customerName: order.customerName,
-        customerCity: order.customerCity,
-        paymentMethod: order.paymentMethod,
-        total: Number(order.total),
-        status: order.status,
-        trackingNumber: order.trackingNumber || "TRX-" + Math.floor(10000000 + Math.random() * 90000000),
-        createdAt: order.createdAt.toISOString(),
-      },
-    };
   } catch (error: any) {
     console.error("Order tracking database notice:", error?.message);
-    // If database connection issue, provide intelligent mockup response for demo/client
-    return {
-      success: true,
-      order: {
-        orderNumber: query.toUpperCase().startsWith("AUR-") ? query.toUpperCase() : "AUR-" + query,
-        customerName: "Aura Valued Client",
-        customerCity: "Karachi / Express Hub",
-        paymentMethod: "Cash on Delivery (COD)",
-        total: 12500,
-        status: "SHIPPED",
-        trackingNumber: "TRX-84920194",
-        createdAt: new Date().toISOString(),
-      },
-      isSimulated: true,
-    };
   }
+
+  return {
+    success: false,
+    message: "No order found matching your search. Please check your reference number or phone and try again.",
+  };
 }
+
 

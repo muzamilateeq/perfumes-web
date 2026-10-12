@@ -19,7 +19,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
-  MessageCircle
+  MessageCircle,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import WhatsAppConcierge from "@/components/WhatsAppConcierge";
@@ -70,6 +71,15 @@ export default function PerfumeStorefront() {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [newsletterSubscribed, setNewsletterSubscribed] = useState<boolean>(false);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+
+  const toggleWishlist = (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setWishlist(prev => 
+      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+    );
+  };
 
   const categories = ["All Fragrances", "Woody & Oud", "Floral & Rose", "Fresh & Citrus", "Warm Gourmand"];
 
@@ -459,32 +469,32 @@ export default function PerfumeStorefront() {
       </section>
 
       {/* 5. COLLECTION & INTERACTIVE NOTES FILTER */}
-      <section id="collection" className="py-28 max-w-7xl mx-auto px-6">
+      <section id="collection" className="py-12 sm:py-24 max-w-7xl mx-auto px-3 sm:px-6">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 sm:mb-14 gap-3 sm:gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="h-[1px] w-8 bg-zinc-900"></span>
-              <span className="text-xs font-bold tracking-[0.25em] uppercase text-zinc-400">The Flacons</span>
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <span className="h-[1px] w-6 sm:w-8 bg-zinc-900"></span>
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-zinc-400">The Flacons</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-950">
+            <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-zinc-950">
               Signature Fragrances
             </h2>
           </div>
-          <p className="text-zinc-500 font-light text-base max-w-md">
+          <p className="text-zinc-500 font-light text-xs sm:text-base max-w-md">
             Hand-poured in limited batches of 150 flacons to ensure uninterrupted maturation and aromatic fidelity.
           </p>
         </div>
 
-        {/* Category Filters */}
-        <div className="flex flex-wrap gap-2.5 mb-16 pb-4 border-b border-zinc-200">
+        {/* Category Filters with smooth horizontal swipe on mobile */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar sm:flex-wrap pb-2 mb-8 sm:mb-12 -mx-3 px-3 sm:mx-0 sm:px-0 border-b border-zinc-200">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2.5 text-xs font-semibold tracking-widest uppercase transition-all ${
+              className={`shrink-0 px-3.5 py-1.5 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase whitespace-nowrap transition-all ${
                 selectedCategory === cat 
-                  ? "bg-zinc-950 text-white shadow-sm" 
+                  ? "bg-zinc-950 text-white shadow-md" 
                   : "bg-white border border-zinc-200 text-zinc-600 hover:border-zinc-900 hover:text-zinc-900"
               }`}
             >
@@ -493,94 +503,115 @@ export default function PerfumeStorefront() {
           ))}
         </div>
 
-        {/* Product Grid */}
+        {/* Product Grid - 2 COLUMNS ON MOBILE (As requested), 3 on Desktop */}
         <motion.div 
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8"
         >
-          {filteredPerfumes.map((product) => (
-            <motion.div 
-              key={product.id} 
-              variants={itemVariants} 
-              className="group bg-white border border-zinc-200 flex flex-col justify-between hover:border-zinc-900 transition-all shadow-sm"
-            >
-              <div>
-                {/* Product Image Frame */}
-                <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 border-b border-zinc-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.25] group-hover:grayscale-0"
-                  />
-                  
-                  {/* Category Pill */}
-                  <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 text-[9px] font-bold tracking-widest uppercase text-zinc-800 border border-zinc-200">
-                    {product.category}
-                  </span>
+          {filteredPerfumes.map((product) => {
+            const isWishlisted = wishlist.includes(product.id);
+            return (
+              <motion.div 
+                key={product.id} 
+                variants={itemVariants} 
+                className="group bg-white border border-zinc-200 flex flex-col justify-between hover:border-zinc-900 transition-all shadow-xs relative overflow-hidden"
+              >
+                <div>
+                  {/* Product Image Frame */}
+                  <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 border-b border-zinc-200">
+                    <Link href={`/perfumes/${product.slug}`} className="block w-full h-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0"
+                      />
+                    </Link>
+                    
+                    {/* Badge */}
+                    {product.badge && (
+                      <span className="absolute top-2 left-2 sm:top-3.5 sm:left-3.5 bg-zinc-950/90 backdrop-blur-sm text-white px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-bold tracking-wider sm:tracking-widest uppercase shadow-sm pointer-events-none">
+                        {product.badge}
+                      </span>
+                    )}
 
-                  {/* Volume Pill */}
-                  <span className="absolute top-4 right-4 bg-zinc-950/80 backdrop-blur-md px-3 py-1 text-[9px] font-mono text-white">
-                    {product.volume}
-                  </span>
-
-                  {/* Quick Add Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    {/* Circular Wishlist Heart Icon (Matching 2nd Reference Picture) */}
                     <button 
-                      onClick={() => addToCart(product)}
-                      className="w-full py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={(e) => toggleWishlist(e, product.id)}
+                      className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-md border border-zinc-200/90 flex items-center justify-center transition-all hover:scale-110 shadow-sm z-10"
+                      title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label="Wishlist"
                     >
-                      <Plus className="w-3.5 h-3.5" /> Quick Add To Cart
+                      <Heart 
+                        className={`w-3.5 h-3.5 transition-colors ${
+                          isWishlisted 
+                            ? "fill-rose-500 text-rose-500" 
+                            : "text-zinc-500 hover:text-zinc-950"
+                        }`} 
+                      />
                     </button>
                   </div>
+
+                  {/* Card Info (Clean, Luxury, Compact for 2 Columns) */}
+                  <div className="p-2.5 sm:p-5 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase text-[#8C7355] block mb-1 truncate">
+                        {product.category}
+                      </span>
+                      
+                      <Link href={`/perfumes/${product.slug}`} className="hover:text-[#8C7355] transition-colors block">
+                        <h3 className="font-serif text-xs sm:text-base md:text-lg font-light tracking-tight text-zinc-950 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.75rem]">
+                          {product.name}
+                        </h3>
+                      </Link>
+                    </div>
+
+                    <div className="mt-1.5 sm:mt-2 flex items-baseline justify-between gap-1">
+                      <p className="font-serif text-xs sm:text-base font-bold text-zinc-950">
+                        {product.price}
+                      </p>
+                      <span className="text-[8px] sm:text-[9px] font-mono text-zinc-400">
+                        50ml
+                      </span>
+                    </div>
+
+                    {/* Sillage & Notes Hint on Desktop */}
+                    <p className="hidden sm:block text-[11px] text-zinc-500 font-light line-clamp-1 mt-1.5">
+                      {product.notes}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Card Info */}
-                <div className="p-6 sm:p-8">
-                  <div className="flex justify-between items-start mb-2">
-                    <Link href={`/perfumes/${product.slug}`} className="hover:text-[#8C7355] transition-colors">
-                      <h3 className="text-2xl font-light tracking-tight text-zinc-950 font-serif">{product.name}</h3>
-                    </Link>
-                    <p className="text-sm font-semibold tracking-wider text-zinc-950">{product.price}</p>
-                  </div>
-                  
-                  <p className="text-xs text-zinc-500 font-light mb-4">{product.description}</p>
-                  
-                  {/* Olfactory Pyramid Accordion */}
-                  <div className="pt-4 border-t border-zinc-100 space-y-1.5 text-[11px]">
-                    <div className="flex gap-2">
-                      <span className="font-bold tracking-wider uppercase text-zinc-400 w-14 shrink-0">Notes:</span>
-                      <span className="text-zinc-700 font-medium">{product.notes}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="font-bold tracking-wider uppercase text-zinc-400 w-14 shrink-0">Profile:</span>
-                      <span className="text-zinc-500">{product.concentration}</span>
-                    </div>
-                  </div>
+                {/* Bottom Actions */}
+                <div className="p-2.5 pt-0 sm:p-5 sm:pt-0 space-y-1.5">
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className="w-full py-2 sm:py-2.5 bg-zinc-950 text-white text-[9px] sm:text-[11px] font-bold tracking-wider sm:tracking-[0.18em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span>Add to Bag</span>
+                  </button>
+
+                  <Link 
+                    href={`/perfumes/${product.slug}`}
+                    className="hidden sm:flex py-1.5 bg-[#FAF9F8] border border-zinc-200 text-zinc-900 text-[10px] font-bold tracking-wider uppercase hover:border-zinc-900 transition-colors items-center justify-center gap-1 text-center"
+                  >
+                    <span>Flacon Details</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </Link>
                 </div>
-              </div>
 
-              {/* Bottom Action */}
-              <div className="px-6 pb-6 pt-0 space-y-2">
-                <button 
-                  onClick={() => addToCart(product)}
-                  className="w-full py-3 border border-zinc-900 text-zinc-950 text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-950 hover:text-white transition-all flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" /> Add To Order • {product.price}
-                </button>
-                <Link
-                  href={`/perfumes/${product.slug}`}
-                  className="w-full py-2.5 bg-[#FAF9F8] border border-zinc-200 text-zinc-800 text-[10px] font-bold tracking-widest uppercase hover:border-zinc-950 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <span>Explore Flacon Details</span>
-                  <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </motion.div>
       </section>
 

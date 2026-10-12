@@ -46,29 +46,29 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white flex flex-col justify-between">
       <SiteHeader />
 
-      <main className="flex-1 py-20 px-6">
+      <main className="flex-1 py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           
           {/* Header */}
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
             <span className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 text-[#8C7355] text-[10px] font-bold tracking-[0.28em] uppercase border border-zinc-200 mb-4">
               <Sparkles className="w-3.5 h-3.5" /> Client Services & Scent Advisory
             </span>
-            <h1 className="font-serif text-4xl sm:text-6xl font-light text-zinc-950">
+            <h1 className="font-serif text-3xl sm:text-6xl font-light text-zinc-950">
               The Aura Concierge
             </h1>
-            <p className="text-zinc-600 font-light text-xs sm:text-sm mt-4 leading-relaxed">
+            <p className="text-zinc-600 font-light text-xs sm:text-sm mt-3 sm:mt-4 leading-relaxed">
               Whether you desire a personalized olfactory consultation, wish to arrange corporate wedding gifting, or require order assistance, our fragrance advisors are at your service.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-12 gap-12 items-start">
+          <div className="grid lg:grid-cols-12 gap-8 sm:gap-12 items-start">
             
             {/* Left: Contact Cards */}
             <div className="lg:col-span-5 space-y-6">
               
               {/* WhatsApp Card */}
-              <div className="p-8 bg-emerald-950 text-white rounded-xs border border-emerald-800 shadow-xl">
+              <div className="p-6 sm:p-8 bg-emerald-950 text-white rounded-xs border border-emerald-800 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                     <MessageCircle className="w-5 h-5" />
@@ -92,7 +92,7 @@ export default function ContactPage() {
               </div>
 
               {/* Service Info */}
-              <div className="p-8 bg-white border border-zinc-200 shadow-xs space-y-6">
+              <div className="p-6 sm:p-8 bg-white border border-zinc-200 shadow-xs space-y-6">
                 <div className="flex items-start gap-4">
                   <Clock className="w-5 h-5 text-[#8C7355] shrink-0 mt-0.5" />
                   <div>
@@ -123,11 +123,11 @@ export default function ContactPage() {
             </div>
 
             {/* Right: Consultation Form */}
-            <div className="lg:col-span-7 bg-white p-8 sm:p-12 border border-zinc-200 shadow-sm">
+            <div className="lg:col-span-7 bg-white p-6 sm:p-10 border border-zinc-200 shadow-sm">
               <span className="text-[10px] font-bold tracking-[0.28em] uppercase text-[#8C7355] block mb-2">
                 Send a Message
               </span>
-              <h2 className="font-serif text-3xl font-light text-zinc-950 mb-6">
+              <h2 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950 mb-6">
                 Consult With Our Scent Specialist
               </h2>
 
@@ -160,7 +160,7 @@ export default function ContactPage() {
                         placeholder="e.g. Farhan Zaidi"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                        className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                       />
                     </div>
 
@@ -174,7 +174,7 @@ export default function ContactPage() {
                         placeholder="0309 8541632"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                        className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -186,7 +186,7 @@ export default function ContactPage() {
                     <select
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                     >
                       <option>Personal Scent Recommendation</option>
                       <option>Discovery Coffret Order Assistance</option>
@@ -206,7 +206,7 @@ export default function ContactPage() {
                       placeholder="Tell us about the scent profiles you prefer (e.g. Woody, Rose, Fresh Citrus) or any special questions..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                     />
                   </div>
 

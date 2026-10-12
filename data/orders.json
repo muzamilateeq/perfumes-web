@@ -1,0 +1,123 @@
+[
+  {
+    "id": "ord-1791803247663",
+    "orderNumber": "AUR-829496",
+    "customerName": "MUZAMIL ATEEQ",
+    "customerPhone": "03098541632",
+    "customerAddress": "high Q tower",
+    "customerCity": "Karachi",
+    "paymentMethod": "COD",
+    "total": 8200,
+    "status": "PENDING",
+    "items": [
+      {
+        "productId": 2,
+        "name": "Velvet Rose",
+        "price": 8200,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-12T11:07:27.663Z"
+  },
+  {
+    "id": "ord-1791803115370",
+    "orderNumber": "AUR-200313",
+    "customerName": "MUZAMIL ATEEQ",
+    "customerPhone": "03098541632",
+    "customerAddress": "high Q tower",
+    "customerCity": "Karachi",
+    "paymentMethod": "COD",
+    "total": 8200,
+    "status": "DELIVERED",
+    "items": [
+      {
+        "productId": 2,
+        "name": "Velvet Rose",
+        "price": 8200,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-12T11:05:15.370Z"
+  },
+  {
+    "id": "ord-1791794383031",
+    "orderNumber": "AUR-757388",
+    "customerName": "MUZAMIL ATEEQ",
+    "customerPhone": "03098541632",
+    "customerAddress": "high Q tower",
+    "customerCity": "Karachi",
+    "paymentMethod": "BANK",
+    "total": 8200,
+    "status": "PENDING",
+    "items": [
+      {
+        "productId": 2,
+        "name": "Velvet Rose",
+        "price": 8200,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-12T08:39:43.031Z"
+  },
+  {
+    "id": "ord-1",
+    "orderNumber": "AUR-928104",
+    "customerName": "Hamza Tariq",
+    "customerPhone": "03001234567",
+    "customerAddress": "House 42, Street 7, Phase 6, DHA",
+    "customerCity": "Karachi",
+    "paymentMethod": "COD",
+    "total": 12500,
+    "status": "CONFIRMED",
+    "items": [
+      {
+        "productId": 1,
+        "name": "Oud Royale (50ml Extrait)",
+        "price": 12500,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-12T02:42:31.914Z"
+  },
+  {
+    "id": "ord-2",
+    "orderNumber": "AUR-651920",
+    "customerName": "Ayesha Farooq",
+    "customerPhone": "03218765432",
+    "customerAddress": "Apartment 4B, Gulberg Heights",
+    "customerCity": "Lahore",
+    "paymentMethod": "COD",
+    "notes": "Complimentary luxury gift box requested",
+    "total": 8200,
+    "status": "SHIPPED",
+    "items": [
+      {
+        "productId": 2,
+        "name": "Velvet Rose (50ml Extrait)",
+        "price": 8200,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-11T08:42:31.915Z"
+  },
+  {
+    "id": "ord-3",
+    "orderNumber": "AUR-410982",
+    "customerName": "Bilal Zubair",
+    "customerPhone": "03335551234",
+    "customerAddress": "Sector F-7/2, Street 18",
+    "customerCity": "Islamabad",
+    "paymentMethod": "BANK",
+    "total": 3500,
+    "status": "DELIVERED",
+    "items": [
+      {
+        "productId": 99,
+        "name": "Discovery Coffret (6 x 5ml)",
+        "price": 3500,
+        "quantity": 1
+      }
+    ],
+    "createdAt": "2026-10-10T06:42:31.915Z"
+  }
+]

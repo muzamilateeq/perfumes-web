@@ -73,12 +73,12 @@ export default function WhatsAppConcierge({
   return (
     <>
       {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative bg-emerald-700 hover:bg-emerald-600 text-white p-3.5 sm:p-4 rounded-full shadow-2xl flex items-center gap-2.5 transition-all border border-emerald-500/40"
+          className="relative bg-emerald-700 hover:bg-emerald-600 text-white p-3 sm:p-4 rounded-full shadow-2xl flex items-center gap-2.5 transition-all border border-emerald-500/40"
           aria-label="Open WhatsApp Concierge"
         >
           {/* Pulsing Online Indicator */}
@@ -104,7 +104,7 @@ export default function WhatsAppConcierge({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 sm:hidden"
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 sm:hidden"
             />
 
             <motion.div
@@ -112,12 +112,12 @@ export default function WhatsAppConcierge({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 30, scale: 0.95 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[410px] bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden text-zinc-900"
+              className="fixed bottom-0 sm:bottom-24 inset-x-0 sm:inset-x-auto sm:right-6 z-50 w-full sm:w-[410px] max-h-[85vh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden text-zinc-900"
             >
               {/* Header */}
-              <div className="bg-zinc-950 text-white p-5 relative">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
+              <div className="bg-zinc-950 text-white p-4 sm:p-5 relative">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <div className="flex items-center gap-2.5 sm:gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-amber-500 flex items-center justify-center text-white font-serif text-lg font-bold shadow-md">
                       A
                     </div>
@@ -243,7 +243,7 @@ export default function WhatsAppConcierge({
                         placeholder="Enter Order # (e.g. AUR-829104)..."
                         value={trackingId}
                         onChange={(e) => setTrackingId(e.target.value)}
-                        className="flex-1 text-xs px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg focus:border-zinc-950 focus:outline-none"
+                        className="flex-1 text-base sm:text-xs px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-lg focus:border-zinc-950 focus:outline-none"
                       />
                       <button
                         type="submit"
@@ -266,7 +266,7 @@ export default function WhatsAppConcierge({
                       placeholder="Type your question..."
                       value={customMessage}
                       onChange={(e) => setCustomMessage(e.target.value)}
-                      className="w-full text-xs pl-3.5 pr-10 py-3 bg-white border border-zinc-300 rounded-xl focus:border-zinc-950 focus:outline-none shadow-2xs"
+                      className="w-full text-base sm:text-xs pl-3.5 pr-10 py-3 bg-white border border-zinc-300 rounded-xl focus:border-zinc-950 focus:outline-none shadow-2xs"
                     />
                     <button
                       type="submit"

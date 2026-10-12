@@ -85,44 +85,44 @@ export default function DiscoveryPage() {
       <main className="flex-1">
         
         {/* HERO FEATURE */}
-        <section className="py-20 md:py-28 px-6 bg-zinc-950 text-white border-b border-zinc-800">
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <section className="py-14 sm:py-20 md:py-28 px-4 sm:px-6 bg-zinc-950 text-white border-b border-zinc-800">
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16 items-center">
             
             <div className="lg:col-span-7">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 text-[#C5A880] text-[10px] font-bold tracking-[0.28em] uppercase border border-white/10 mb-6">
+              <span className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 bg-white/10 text-[#C5A880] text-[9px] sm:text-[10px] font-bold tracking-[0.25em] sm:tracking-[0.28em] uppercase border border-white/10 mb-4 sm:mb-6">
                 <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" /> Sample in Private Luxury
               </span>
 
-              <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-light tracking-tight mb-6 leading-[1.05]">
+              <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight mb-4 sm:mb-6 leading-[1.05]">
                 The Aura <br />
                 <span className="italic font-normal text-[#E0C79F]">Discovery Coffret.</span>
               </h1>
 
-              <p className="text-zinc-300 font-light text-base sm:text-lg leading-relaxed mb-8 max-w-xl">
+              <p className="text-zinc-300 font-light text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-xl">
                 Selecting a signature extrait requires intimate skin chemistry. The Discovery Coffret gives you <strong>all six permanent creations in bespoke 5ml glass atomizers</strong>, accompanied by an embossed black keepsake box and a <strong>100% redeemable PKR 4,500 voucher</strong>.
               </p>
 
               {/* Value Props */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-10 border-y border-zinc-800 py-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10 border-y border-zinc-800 py-5 sm:py-6">
                 <div>
-                  <span className="font-serif text-3xl font-light text-white">6 x 5ml</span>
+                  <span className="font-serif text-2xl sm:text-3xl font-light text-white">6 x 5ml</span>
                   <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">Glass Atomizers</span>
                 </div>
                 <div>
-                  <span className="font-serif text-3xl font-light text-[#E0C79F]">PKR 4,500</span>
+                  <span className="font-serif text-2xl sm:text-3xl font-light text-[#E0C79F]">PKR 4,500</span>
                   <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">100% Free Shipping</span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <span className="font-serif text-3xl font-light text-emerald-400">100%</span>
+                  <span className="font-serif text-2xl sm:text-3xl font-light text-emerald-400">100%</span>
                   <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">Redeemable Voucher</span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <a
                   href="#order-section"
-                  className="px-8 py-4 bg-white text-zinc-950 text-xs font-bold tracking-[0.22em] uppercase hover:bg-zinc-200 transition-all flex items-center justify-center gap-3 shadow-2xl"
+                  className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-zinc-950 text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase hover:bg-zinc-200 transition-all flex items-center justify-center gap-2.5 shadow-2xl"
                 >
                   Order With Cash on Delivery <ArrowRight className="w-4 h-4" />
                 </a>
@@ -131,7 +131,7 @@ export default function DiscoveryPage() {
                   href={whatsappOrderUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-8 py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-2.5 shadow-xl"
+                  className="px-6 sm:px-8 py-3.5 sm:py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-2.5 shadow-xl"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Order via WhatsApp</span>
@@ -169,38 +169,61 @@ export default function DiscoveryPage() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8">
             {PERFUMES_DATA.map((p, index) => (
-              <div key={p.id} className="p-6 bg-white border border-zinc-200 flex flex-col justify-between shadow-2xs hover:border-zinc-950 transition-all">
+              <div key={p.id} className="bg-white border border-zinc-200 overflow-hidden flex flex-col justify-between hover:border-zinc-950 transition-all shadow-xs group relative">
                 <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="font-mono text-xs text-zinc-400 font-bold">0{index + 1}</span>
-                    <span className="px-2.5 py-1 bg-zinc-100 text-zinc-700 text-[10px] font-bold tracking-wider uppercase">
-                      {p.category}
+                  <Link href={`/perfumes/${p.slug}`} className="block relative aspect-[4/5] bg-zinc-100 overflow-hidden border-b border-zinc-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={p.image} 
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0" 
+                    />
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 bg-zinc-950 text-white text-[8px] sm:text-[9px] font-bold tracking-wider uppercase">
+                      0{index + 1}
                     </span>
-                  </div>
-                  <h3 className="font-serif text-2xl font-light text-zinc-950 mb-2">{p.name}</h3>
-                  <p className="text-xs text-zinc-500 font-light mb-4">{p.description}</p>
+                    <span className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-mono text-zinc-800 border border-zinc-200">
+                      5ml
+                    </span>
+                  </Link>
                   
-                  <div className="p-3 bg-[#FAF9F7] text-[11px] space-y-1 mb-4 border border-zinc-100">
-                    <div className="flex gap-2">
-                      <span className="font-bold text-zinc-400 uppercase w-14 shrink-0">Notes:</span>
-                      <span className="text-zinc-800">{p.notes}</span>
+                  <div className="p-2.5 sm:p-5 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase text-[#8C7355] block mb-1 truncate">
+                        {p.category}
+                      </span>
+                      <Link href={`/perfumes/${p.slug}`} className="hover:text-[#8C7355] transition-colors block">
+                        <h3 className="font-serif text-xs sm:text-base md:text-lg font-light tracking-tight text-zinc-950 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.75rem]">
+                          {p.name}
+                        </h3>
+                      </Link>
                     </div>
-                    <div className="flex gap-2">
-                      <span className="font-bold text-zinc-400 uppercase w-14 shrink-0">Duration:</span>
-                      <span className="text-zinc-700">{p.longevity}</span>
+
+                    <div className="mt-1.5 sm:mt-2 flex items-baseline justify-between gap-1 mb-1.5 sm:mb-2">
+                      <p className="font-serif text-xs sm:text-base font-bold text-zinc-950">
+                        5ml Atomizer
+                      </p>
+                      <span className="text-[8px] sm:text-[9px] font-mono text-zinc-400">
+                        Included
+                      </span>
                     </div>
+
+                    <p className="hidden sm:block text-[11px] text-zinc-500 font-light line-clamp-1 mb-2">
+                      {p.notes}
+                    </p>
                   </div>
                 </div>
 
-                <Link
-                  href={`/perfumes/${p.slug}`}
-                  className="text-xs font-bold tracking-widest uppercase text-zinc-900 hover:text-amber-700 flex items-center justify-between pt-4 border-t border-zinc-100"
-                >
-                  <span>View 50ml Flacon</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                <div className="p-2.5 pt-0 sm:p-5 sm:pt-0">
+                  <Link
+                    href={`/perfumes/${p.slug}`}
+                    className="w-full py-2 sm:py-2.5 bg-zinc-950 text-white text-[9px] sm:text-[11px] font-bold tracking-wider sm:tracking-[0.18em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <span>View 50ml Flacon</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -247,28 +270,28 @@ export default function DiscoveryPage() {
         </section>
 
         {/* ORDER CHECKOUT SECTION */}
-        <section id="order-section" className="py-24 px-6 max-w-2xl mx-auto">
-          <div className="bg-white p-8 sm:p-12 border border-zinc-200 shadow-sm">
-            <div className="text-center mb-8">
-              <span className="text-[10px] font-bold tracking-[0.28em] uppercase text-[#8C7355] block mb-2">
+        <section id="order-section" className="py-14 sm:py-24 px-4 sm:px-6 max-w-2xl mx-auto">
+          <div className="bg-white p-5 sm:p-8 md:p-12 border border-zinc-200 shadow-sm">
+            <div className="text-center mb-6 sm:mb-8">
+              <span className="text-[10px] font-bold tracking-[0.25em] sm:tracking-[0.28em] uppercase text-[#8C7355] block mb-1.5 sm:mb-2">
                 Doorstep Delivery
               </span>
-              <h3 className="font-serif text-3xl font-light text-zinc-950">
+              <h3 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950">
                 Order Your Discovery Coffret
               </h3>
-              <p className="text-xs text-zinc-500 mt-2">
+              <p className="text-xs text-zinc-500 mt-1.5 sm:mt-2">
                 PKR 4,500 • Cash on Delivery Nationwide • Free Delivery
               </p>
             </div>
 
             {isOrdered ? (
-              <div className="p-8 text-center bg-emerald-50 border border-emerald-200">
-                <div className="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="w-7 h-7" />
+              <div className="p-5 sm:p-8 text-center bg-emerald-50 border border-emerald-200">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Check className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <h4 className="font-serif text-2xl font-light text-emerald-950 mb-2">Discovery Coffret Registered!</h4>
+                <h4 className="font-serif text-xl sm:text-2xl font-light text-emerald-950 mb-1.5 sm:mb-2">Discovery Coffret Registered!</h4>
                 <p className="text-xs font-bold text-zinc-900 mb-1">Order Reference: #{orderRef}</p>
-                <p className="text-xs text-zinc-600 mb-6 leading-relaxed">
+                <p className="text-xs text-zinc-600 mb-5 sm:mb-6 leading-relaxed">
                   Thank you, {formData.name}. Your box will be packed in our sealed black coffret and dispatched within 24 hours.
                 </p>
                 <a
@@ -281,9 +304,9 @@ export default function DiscoveryPage() {
                 </a>
               </div>
             ) : (
-              <form onSubmit={handleOrder} className="space-y-4">
+              <form onSubmit={handleOrder} className="space-y-3.5 sm:space-y-4">
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1 sm:mb-1.5">
                     Your Full Name *
                   </label>
                   <input
@@ -292,12 +315,12 @@ export default function DiscoveryPage() {
                     placeholder="e.g. Asad Siddiqui"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1 sm:mb-1.5">
                     Mobile / WhatsApp Phone Number *
                   </label>
                   <input
@@ -306,12 +329,12 @@ export default function DiscoveryPage() {
                     placeholder="0300 1234567"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                  <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1 sm:mb-1.5">
                     Complete Shipping Address *
                   </label>
                   <textarea
@@ -320,19 +343,19 @@ export default function DiscoveryPage() {
                     placeholder="House/Apartment #, Street, Area..."
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                    <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1 sm:mb-1.5">
                       Destination City *
                     </label>
                     <select
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none"
+                      className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none"
                     >
                       <option>Karachi</option>
                       <option>Lahore</option>
@@ -347,13 +370,13 @@ export default function DiscoveryPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                    <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1 sm:mb-1.5">
                       Payment Mode
                     </label>
                     <select
                       value={formData.paymentMethod}
                       onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#FAF9F7] border border-zinc-300 text-xs focus:border-zinc-950 focus:outline-none font-bold"
+                      className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F7] border border-zinc-300 text-base sm:text-xs focus:border-zinc-950 focus:outline-none font-bold"
                     >
                       <option value="COD">Cash on Delivery</option>
                       <option value="BANK">Bank Transfer / Raast</option>
@@ -364,7 +387,7 @@ export default function DiscoveryPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl mt-4 flex items-center justify-center gap-2"
+                  className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl mt-4 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? "Registering Order..." : "Confirm Discovery Set • PKR 4,500"}
                 </button>

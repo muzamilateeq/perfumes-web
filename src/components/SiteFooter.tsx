@@ -10,12 +10,12 @@ export default function SiteFooter() {
   );
 
   return (
-    <footer className="border-t border-zinc-200 py-20 px-6 bg-white text-zinc-900">
+    <footer className="border-t border-zinc-200 py-12 sm:py-20 px-4 sm:px-6 bg-white text-zinc-900">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-12 mb-12 sm:mb-16">
           
           {/* Brand Info */}
-          <div className="md:col-span-4">
+          <div className="col-span-2 md:col-span-4">
             <Link href="/" className="font-serif text-3xl font-light tracking-[0.35em] uppercase text-zinc-950 block mb-4">
               Aura
             </Link>
@@ -30,11 +30,11 @@ export default function SiteFooter() {
           </div>
 
           {/* Collection Column */}
-          <div className="md:col-span-2">
-            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-6">
+          <div className="col-span-1 md:col-span-2">
+            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-4 sm:mb-6">
               Flacons
             </span>
-            <ul className="space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            <ul className="space-y-2.5 sm:space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
               <li><Link href="/perfumes/oud-royale" className="hover:text-zinc-950 transition-colors">Oud Royale</Link></li>
               <li><Link href="/perfumes/velvet-rose" className="hover:text-zinc-950 transition-colors">Velvet Rose</Link></li>
               <li><Link href="/perfumes/midnight-citrus" className="hover:text-zinc-950 transition-colors">Midnight Citrus</Link></li>
@@ -46,11 +46,11 @@ export default function SiteFooter() {
           </div>
 
           {/* Experience & The House */}
-          <div className="md:col-span-3">
-            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-6">
+          <div className="col-span-1 md:col-span-3">
+            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-4 sm:mb-6">
               The House
             </span>
-            <ul className="space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            <ul className="space-y-2.5 sm:space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
               <li><Link href="/about" className="hover:text-zinc-950 transition-colors">About Aura Heritage</Link></li>
               <li><Link href="/about#maceration" className="hover:text-zinc-950 transition-colors">90-Day Maceration</Link></li>
               <li><Link href="/discovery" className="hover:text-zinc-950 transition-colors">Discovery Coffret Set</Link></li>
@@ -61,11 +61,11 @@ export default function SiteFooter() {
           </div>
 
           {/* Client Service & Legal */}
-          <div className="md:col-span-3">
-            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-6">
+          <div className="col-span-2 md:col-span-3">
+            <span className="text-xs font-bold tracking-widest uppercase text-zinc-950 block mb-4 sm:mb-6">
               Client Service
             </span>
-            <ul className="space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            <ul className="space-y-2.5 sm:space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
               <li><Link href="/shipping-policy" className="hover:text-zinc-950 transition-colors">Free Express Shipping</Link></li>
               <li><Link href="/refund-policy" className="hover:text-zinc-950 transition-colors">Trial Vial & Returns</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-zinc-950 transition-colors">Privacy Policy</Link></li>
@@ -87,9 +87,9 @@ export default function SiteFooter() {
         </div>
 
         {/* Bottom Strip */}
-        <div className="pt-8 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-400 gap-4">
-          <p>© {new Date().getFullYear()} Aura Fragrances. All rights reserved. Artisanal Haute Parfumerie.</p>
-          <div className="flex gap-6 uppercase tracking-wider text-[11px]">
+        <div className="pt-6 sm:pt-8 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left text-xs text-zinc-400 gap-4">
+          <p>© 2025 Aura Fragrances. All rights reserved. Artisanal Haute Parfumerie.</p>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 uppercase tracking-wider text-[11px]">
             <Link href="/privacy-policy" className="hover:text-zinc-900 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-zinc-900 transition-colors">Terms</Link>
             <Link href="/shipping-policy" className="hover:text-zinc-900 transition-colors">Shipping</Link>

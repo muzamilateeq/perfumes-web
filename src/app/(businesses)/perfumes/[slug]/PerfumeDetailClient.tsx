@@ -106,19 +106,19 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
       <SiteHeader cartCount={0} />
 
       {/* Breadcrumb Navigation */}
-      <nav className="border-b border-zinc-200 bg-white/60 py-3.5 px-6">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-zinc-500 uppercase tracking-widest font-medium overflow-x-auto">
-          <Link href="/" className="hover:text-zinc-900 transition-colors">Home</Link>
+      <nav className="border-b border-zinc-200 bg-white/60 py-3 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 text-[11px] sm:text-xs text-zinc-500 uppercase tracking-widest font-medium overflow-x-auto no-scrollbar">
+          <Link href="/" className="hover:text-zinc-900 transition-colors shrink-0">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-          <Link href="/perfumes" className="hover:text-zinc-900 transition-colors">Collection</Link>
+          <Link href="/perfumes" className="hover:text-zinc-900 transition-colors shrink-0">Collection</Link>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-          <span className="text-zinc-900 font-bold truncate">{perfume.name}</span>
+          <span className="text-zinc-900 font-bold truncate shrink-0">{perfume.name}</span>
         </div>
       </nav>
 
       {/* Main Product Showcase */}
-      <main className="max-w-7xl mx-auto px-6 py-12 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16 items-start">
           
           {/* Left Column: Visual Flacon Display */}
           <div className="lg:col-span-6 space-y-6">
@@ -132,31 +132,31 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
 
               {/* Badge */}
               {perfume.badge && (
-                <span className="absolute top-6 left-6 bg-zinc-950 text-white px-4 py-1.5 text-[10px] font-bold tracking-[0.25em] uppercase shadow-lg">
+                <span className="absolute top-4 sm:top-6 left-4 sm:left-6 bg-zinc-950 text-white px-3 sm:px-4 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.25em] uppercase shadow-lg">
                   {perfume.badge}
                 </span>
               )}
 
               {/* Concentration Tag */}
-              <span className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-3.5 py-1.5 text-[10px] font-bold tracking-widest text-[#8C7355] border border-zinc-200 uppercase">
+              <span className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white/95 backdrop-blur-md px-3 sm:px-3.5 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#8C7355] border border-zinc-200 uppercase">
                 {perfume.concentration}
               </span>
 
               {/* Bottom Purity Overlay */}
-              <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-zinc-950/80 via-zinc-950/40 to-transparent text-white flex justify-between items-end">
+              <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950/80 via-zinc-950/40 to-transparent text-white flex justify-between items-end">
                 <div>
                   <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-300">Volume</p>
-                  <p className="font-serif text-lg font-light tracking-wide">{perfume.volume}</p>
+                  <p className="font-serif text-base sm:text-lg font-light tracking-wide">{perfume.volume}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-300">Concentration</p>
-                  <p className="font-serif text-lg font-light tracking-wide">30%+ Pure Oil</p>
+                  <p className="font-serif text-base sm:text-lg font-light tracking-wide">30%+ Pure Oil</p>
                 </div>
               </div>
             </div>
 
             {/* Micro Highlights Bar */}
-            <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
               <div className="p-4 bg-white border border-zinc-200">
                 <Truck className="w-4 h-4 text-[#C5A880] mx-auto mb-1.5" />
                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">Express Delivery</p>
@@ -185,37 +185,37 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                   {perfume.category}
                 </span>
                 <span className="text-zinc-300">•</span>
-                <span className="text-[11px] font-mono tracking-wider text-zinc-500">
-                  {perfume.volume}
+                <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-zinc-700">
+                  Extrait de Parfum • {perfume.volume || "50ml"}
                 </span>
               </div>
 
-              <h1 className="font-serif text-4xl sm:text-5xl font-light tracking-tight text-zinc-950 mb-3">
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-zinc-950 mb-3">
                 {perfume.name}
               </h1>
 
               {/* Price Banner */}
-              <div className="flex items-baseline gap-4 mb-4">
-                <span className="font-serif text-3xl font-normal text-zinc-950">
+              <div className="flex items-baseline gap-3 sm:gap-4 mb-4">
+                <span className="font-serif text-2xl sm:text-3xl font-normal text-zinc-950">
                   {perfume.price}
                 </span>
-                <span className="text-xs text-emerald-800 font-bold uppercase tracking-wider bg-emerald-50 px-2.5 py-1 border border-emerald-200">
+                <span className="text-[10px] sm:text-xs text-emerald-800 font-bold uppercase tracking-wider bg-emerald-50 px-2.5 py-1 border border-emerald-200">
                   Free Nationwide Courier
                 </span>
               </div>
 
-              <p className="text-sm text-zinc-600 font-light leading-relaxed">
+              <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
                 {perfume.description}
               </p>
             </div>
 
             {/* Performance Specifications */}
-            <div className="grid grid-cols-2 gap-4 p-5 bg-white border border-zinc-200 text-xs">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 p-4 sm:p-5 bg-white border border-zinc-200 text-xs">
               <div>
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
                   Longevity
                 </span>
-                <span className="font-serif text-base font-medium text-zinc-950 flex items-center gap-1.5">
+                <span className="font-serif text-sm sm:text-base font-medium text-zinc-950 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-[#8C7355]" />
                   {perfume.longevity}
                 </span>
@@ -224,7 +224,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
                   Sillage & Trail
                 </span>
-                <span className="font-serif text-base font-medium text-zinc-950 flex items-center gap-1.5">
+                <span className="font-serif text-sm sm:text-base font-medium text-zinc-950 flex items-center gap-1.5">
                   <Droplet className="w-3.5 h-3.5 text-[#8C7355]" />
                   {perfume.sillage}
                 </span>
@@ -233,7 +233,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
                   Best Occasion
                 </span>
-                <span className="text-zinc-800 font-medium">
+                <span className="text-zinc-800 font-medium text-[11px] sm:text-xs">
                   {perfume.bestOccasion}
                 </span>
               </div>
@@ -241,19 +241,19 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                 <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 block mb-1">
                   Ideal Season
                 </span>
-                <span className="text-zinc-800 font-medium">
+                <span className="text-zinc-800 font-medium text-[11px] sm:text-xs">
                   {perfume.season}
                 </span>
               </div>
             </div>
 
             {/* Order Controls */}
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3.5 sm:space-y-4 pt-2">
               
               {/* Quantity Selector */}
-              <div className="flex items-center justify-between p-3.5 bg-white border border-zinc-200">
+              <div className="flex items-center justify-between p-3 sm:p-3.5 bg-white border border-zinc-200">
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-700">Quantity</span>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <button 
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                     className="p-1 hover:bg-zinc-100 transition-colors text-zinc-600"
@@ -273,22 +273,22 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
               </div>
 
               {/* Complimentary Gift Box Checkbox */}
-              <label className="flex items-center gap-3 p-3.5 bg-white border border-zinc-200 cursor-pointer text-xs text-zinc-800">
+              <label className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 bg-white border border-zinc-200 cursor-pointer text-xs text-zinc-800">
                 <input 
-                  type="checkbox"
+                  type="checkbox" 
                   checked={includeGiftBox}
                   onChange={(e) => setIncludeGiftBox(e.target.checked)}
                   className="rounded border-zinc-300 text-zinc-950 focus:ring-0"
                 />
-                <Gift className="w-4 h-4 text-[#8C7355]" />
+                <Gift className="w-4 h-4 text-[#8C7355] shrink-0" />
                 <span className="font-medium">Complimentary luxury gift box with golden wax seal</span>
               </label>
 
               {/* Primary Action Buttons */}
-              <div className="space-y-3 pt-2">
+              <div className="space-y-2.5 sm:space-y-3 pt-1 sm:pt-2">
                 <button
                   onClick={() => setIsCheckoutOpen(true)}
-                  className="w-full py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 shadow-xl"
+                  className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-2.5 shadow-xl"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Order with Cash on Delivery (PKR {totalPrice.toLocaleString()})</span>
@@ -298,7 +298,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                   href={whatsappOrderUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-3 shadow-md"
+                  className="w-full py-3 sm:py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-2.5 shadow-md"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Order via WhatsApp ({WHATSAPP_CONFIG.displayNumber})</span>
@@ -431,7 +431,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
         <section className="mt-16 p-8 sm:p-10 bg-[#FAF7F2] border border-[#EBE4D8] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355]">
-              Can't Decide on Just One?
+              Can&apos;t Decide on Just One?
             </span>
             <h3 className="font-serif text-2xl font-light text-zinc-950">
               The Aura Discovery Coffret (6 x 5ml Extrait)
@@ -462,32 +462,47 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6 lg:gap-8">
               {relatedPerfumes.map((rel) => (
-                <div key={rel.id} className="bg-white border border-zinc-200 overflow-hidden group">
-                  <div className="relative aspect-[4/5] bg-zinc-100 overflow-hidden">
+                <div key={rel.id} className="bg-white border border-zinc-200 overflow-hidden group flex flex-col justify-between hover:border-zinc-950 transition-all shadow-xs relative">
+                  <Link href={`/perfumes/${rel.slug}`} className="block relative aspect-[4/5] bg-zinc-100 overflow-hidden border-b border-zinc-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={rel.image} 
                       alt={rel.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0" 
                     />
-                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 text-[9px] font-mono text-zinc-800 border border-zinc-200">
-                      {rel.volume}
+                    <span className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-mono text-zinc-800 border border-zinc-200">
+                      50ml
                     </span>
-                  </div>
-                  <div className="p-6">
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
-                      {rel.category}
-                    </span>
-                    <h3 className="font-serif text-xl font-light text-zinc-950 mb-1">{rel.name}</h3>
-                    <p className="text-xs font-bold text-zinc-900 mb-4">{rel.price}</p>
+                  </Link>
+                  <div className="p-2.5 sm:p-5 flex flex-col justify-between flex-1">
+                    <div>
+                      <span className="text-[8px] sm:text-[10px] font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase text-[#8C7355] block mb-1 truncate">
+                        {rel.category}
+                      </span>
+                      <Link href={`/perfumes/${rel.slug}`} className="hover:text-[#8C7355] transition-colors block">
+                        <h3 className="font-serif text-xs sm:text-base md:text-lg font-light tracking-tight text-zinc-950 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.75rem]">
+                          {rel.name}
+                        </h3>
+                      </Link>
+                    </div>
+
+                    <div className="mt-1.5 sm:mt-2 flex items-baseline justify-between gap-1 mb-2.5 sm:mb-3">
+                      <p className="font-serif text-xs sm:text-base font-bold text-zinc-950">
+                        {rel.price}
+                      </p>
+                      <span className="text-[8px] sm:text-[9px] font-mono text-zinc-400">
+                        50ml
+                      </span>
+                    </div>
+
                     <Link
                       href={`/perfumes/${rel.slug}`}
-                      className="w-full py-2.5 bg-zinc-950 text-white text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-2 sm:py-2.5 bg-zinc-950 text-white text-[9px] sm:text-[11px] font-bold tracking-wider sm:tracking-[0.18em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 shadow-xs"
                     >
                       <span>View Flacon</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </div>
@@ -514,38 +529,38 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[650px] max-h-[90vh] bg-white z-50 shadow-2xl overflow-y-auto p-8 sm:p-10 border border-zinc-200"
+              className="fixed inset-0 sm:inset-6 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[650px] sm:max-h-[90vh] h-full sm:h-auto bg-white z-50 shadow-2xl overflow-y-auto p-5 sm:p-8 md:p-10 border border-zinc-200 sm:rounded-sm"
             >
-              <div className="flex justify-between items-center pb-6 border-b border-zinc-200 mb-6">
+              <div className="flex justify-between items-center pb-4 sm:pb-6 border-b border-zinc-200 mb-5 sm:mb-6">
                 <div>
-                  <h3 className="font-serif text-3xl font-light text-zinc-950">Express Checkout</h3>
-                  <p className="text-xs text-zinc-500 mt-1">Cash on Delivery for {perfume.name}</p>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950">Express Checkout</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5 sm:mt-1">Cash on Delivery for {perfume.name}</p>
                 </div>
                 <button 
                   onClick={() => setIsCheckoutOpen(false)}
-                  className="p-2 hover:bg-zinc-100 rounded-full transition-colors"
+                  className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-full transition-colors"
                 >
                   <X className="w-5 h-5 text-zinc-500" />
                 </button>
               </div>
 
               {orderSuccess ? (
-                <div className="py-12 text-center">
-                  <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Check className="w-8 h-8" />
+                <div className="py-8 sm:py-12 text-center">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <Check className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
-                  <h4 className="font-serif text-3xl font-light text-zinc-950 mb-2">Order Confirmed!</h4>
-                  <p className="text-sm font-bold text-zinc-900 mb-1">Order Reference: #{orderId}</p>
-                  <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-8 leading-relaxed">
+                  <h4 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950 mb-1.5 sm:mb-2">Order Confirmed!</h4>
+                  <p className="text-xs sm:text-sm font-bold text-zinc-900 mb-1">Order Reference: #{orderId}</p>
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-6 sm:mb-8 leading-relaxed">
                     Thank you, {checkoutData.name}. Your order for {quantity}x {perfume.name} has been placed. 
                     Our concierge will dispatch your sealed package with the complimentary matching 2ml tester.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
                     <a
                       href={buildWhatsAppUrl(generateConfirmedOrderWhatsAppMessage(orderId, checkoutData, [{ product: perfume, quantity }], totalPrice))}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg"
+                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg"
                     >
                       <MessageCircle className="w-4 h-4" /> Send Receipt to WhatsApp
                     </a>
@@ -554,27 +569,27 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                         setOrderSuccess(false);
                         setIsCheckoutOpen(false);
                       }}
-                      className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors"
+                      className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors"
                     >
                       Close
                     </button>
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleCheckoutSubmit} className="space-y-6">
+                <form onSubmit={handleCheckoutSubmit} className="space-y-4 sm:space-y-6">
                   
                   {/* Summary Bar */}
-                  <div className="p-4 bg-zinc-50 border border-zinc-200 flex justify-between items-center text-xs">
+                  <div className="p-3.5 sm:p-4 bg-zinc-50 border border-zinc-200 flex justify-between items-center text-xs">
                     <div>
                       <span className="font-semibold text-zinc-900 block">{perfume.name} x {quantity}</span>
                       <span className="text-zinc-500 text-[11px]">{perfume.volume} • Free Delivery</span>
                     </div>
-                    <span className="font-serif text-xl font-bold text-zinc-950">PKR {totalPrice.toLocaleString()}</span>
+                    <span className="font-serif text-lg sm:text-xl font-bold text-zinc-950">PKR {totalPrice.toLocaleString()}</span>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
                         Recipient Full Name *
                       </label>
                       <input 
@@ -583,11 +598,11 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                         placeholder="e.g. Tariq Mansoor"
                         value={checkoutData.name}
                         onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
                         WhatsApp / Mobile No *
                       </label>
                       <input 
@@ -596,13 +611,13 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                         placeholder="0300 1234567"
                         value={checkoutData.phone}
                         onChange={(e) => setCheckoutData({ ...checkoutData, phone: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                    <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
                       Complete Delivery Address *
                     </label>
                     <textarea 
@@ -611,19 +626,19 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                       placeholder="House / Apartment no, Street, Sector / Area..."
                       value={checkoutData.address}
                       onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                      className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
                     />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
                         Destination City *
                       </label>
                       <select 
                         value={checkoutData.city}
                         onChange={(e) => setCheckoutData({ ...checkoutData, city: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none"
+                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
                       >
                         <option>Karachi</option>
                         <option>Lahore</option>
@@ -639,13 +654,13 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-2">
+                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
                         Payment Mode
                       </label>
                       <select 
                         value={checkoutData.paymentMethod}
                         onChange={(e) => setCheckoutData({ ...checkoutData, paymentMethod: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#FAF9F8] border border-zinc-300 text-sm focus:border-zinc-950 focus:outline-none font-bold"
+                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none font-bold"
                       >
                         <option value="COD">Cash on Delivery (Pay at Doorstep)</option>
                         <option value="BANK">Direct Bank Transfer / Raast</option>
@@ -656,7 +671,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-3 mt-6 disabled:opacity-50"
+                    className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-2.5 mt-4 sm:mt-6 disabled:opacity-50"
                   >
                     {isSubmitting ? "Confirming Order..." : `Confirm Order (PKR ${totalPrice.toLocaleString()})`}
                     <ArrowRight className="w-4 h-4" />

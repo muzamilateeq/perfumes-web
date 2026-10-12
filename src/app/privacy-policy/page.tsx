@@ -14,14 +14,14 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white flex flex-col justify-between">
       <SiteHeader />
 
-      <main className="flex-1 py-20 px-6">
+      <main className="flex-1 py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-zinc-100 text-[#8C7355] text-[10px] font-bold tracking-[0.28em] uppercase border border-zinc-200 mb-4">
               <ShieldCheck className="w-3.5 h-3.5" /> Client Data Protection
             </span>
-            <h1 className="font-serif text-4xl sm:text-5xl font-light text-zinc-950">
+            <h1 className="font-serif text-3xl sm:text-5xl font-light text-zinc-950">
               Privacy Policy
             </h1>
             <p className="text-xs text-zinc-500 font-light mt-2">
@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
 
-          <div className="bg-white p-8 sm:p-12 border border-zinc-200 shadow-sm space-y-8 text-zinc-700 text-xs sm:text-sm font-light leading-relaxed">
+          <div className="bg-white p-5 sm:p-12 border border-zinc-200 shadow-sm space-y-8 text-zinc-700 text-xs sm:text-sm font-light leading-relaxed">
             <div>
               <h2 className="font-serif text-xl font-bold text-zinc-950 mb-3">1. Information We Collect</h2>
               <p>

@@ -6,6 +6,7 @@ export interface PerfumeItem {
   price: string;
   priceNum: number;
   image: string;
+  bannerImage?: string;
   notes: string;
   topNotes: string;
   heartNotes: string;
@@ -31,6 +32,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 12,500",
     priceNum: 12500,
     image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "/banners/oud-royale.png",
     notes: "Cambodian Agarwood, Amber, Bourbon Vanilla",
     topNotes: "Calabrian Bergamot, Black Cardamom",
     heartNotes: "20-Year Aged Cambodian Oud, Nutmeg",
@@ -54,6 +56,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 8,200",
     priceNum: 8200,
     image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "/banners/velvet-rose.png",
     notes: "French May Rose, Damask Rose, Indonesian Patchouli",
     topNotes: "Pink Pepper, Frozen Blackcurrant",
     heartNotes: "French May Rose Absolute, Bulgarian Damask",
@@ -77,6 +80,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 6,800",
     priceNum: 6800,
     image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "/banners/midnight-citrus.png",
     notes: "Calabrian Bergamot, Italian Neroli, Haitian Vetiver",
     topNotes: "Zesty Sicilian Mandarin, Crushed Garden Mint",
     heartNotes: "Italian Petitgrain, Sunlit Neroli",
@@ -100,6 +104,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 15,000",
     priceNum: 15000,
     image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=2000",
     notes: "Australian Sandalwood, Tuscan Leather, Florentine Iris",
     topNotes: "Green Cardamom, Violet Leaves",
     heartNotes: "Egyptian Papyrus, Iris Butter, Cedar",
@@ -123,6 +128,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 7,500",
     priceNum: 7500,
     image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=2000",
     notes: "Bourbon Vanilla Absolute, Roasted Tonka, Cocoa Pod",
     topNotes: "Creamy Almond Milk, Heliotrope Blossom",
     heartNotes: "Roasted Venezuelan Tonka, Raw Cocoa",
@@ -146,6 +152,7 @@ export const PERFUMES_DATA: PerfumeItem[] = [
     price: "PKR 9,000",
     priceNum: 9000,
     image: "https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&q=80&w=1200",
+    bannerImage: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=2000",
     notes: "Marine Sea Salt, Kaffir Lime, Blue Sage, Driftwood",
     topNotes: "Kaffir Lime Zest, Oceanic Saline Mist",
     heartNotes: "French Gardenia, Coastal Blue Sage",
