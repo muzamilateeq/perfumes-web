@@ -110,7 +110,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
         <div className="max-w-7xl mx-auto flex items-center gap-2 text-[11px] sm:text-xs text-zinc-500 uppercase tracking-widest font-medium overflow-x-auto no-scrollbar">
           <Link href="/" className="hover:text-zinc-900 transition-colors shrink-0">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-          <Link href="/perfumes" className="hover:text-zinc-900 transition-colors shrink-0">Collection</Link>
+          <Link href="/#collection" className="hover:text-zinc-900 transition-colors shrink-0">Collection</Link>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
           <span className="text-zinc-900 font-bold truncate shrink-0">{perfume.name}</span>
         </div>
