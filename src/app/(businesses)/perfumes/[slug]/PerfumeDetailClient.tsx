@@ -33,13 +33,15 @@ import {
   WHATSAPP_CONFIG 
 } from "@/lib/whatsapp";
 import { createOrderAction } from "@/app/actions/order";
+import { StoreSettings } from "@/lib/storeTypes";
 
 interface PerfumeDetailClientProps {
   perfume: PerfumeItem;
   relatedPerfumes: PerfumeItem[];
+  settings?: StoreSettings;
 }
 
-export default function PerfumeDetailClient({ perfume, relatedPerfumes }: PerfumeDetailClientProps) {
+export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings }: PerfumeDetailClientProps) {
   const [quantity, setQuantity] = useState<number>(1);
   const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
@@ -388,12 +390,10 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                   <div className="p-6 bg-white border border-zinc-200 space-y-3 text-xs leading-relaxed text-zinc-600 font-light">
                     <div className="flex items-center gap-2 text-emerald-800 font-bold uppercase tracking-wider text-[11px]">
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <span>The 100% Risk-Free Trial Vial Promise</span>
+                      <span>{settings?.trialGuaranteeBadge || "The 100% Risk-Free Trial Vial Promise"}</span>
                     </div>
                     <p>
-                      Your flacon comes accompanied by a matching 2ml tester vial outside the main presentation box. 
-                      Spray and experience the scent for 24 hours. If it does not command compliments or meet your expectations, 
-                      simply return the unopened main flacon for an immediate full refund.
+                      {settings?.trialGuaranteeDescription || `Your flacon comes accompanied by a matching 2ml tester vial outside the main presentation box. Spray and experience the scent for 24 hours. If it does not command compliments or meet your expectations, simply return the unopened main flacon for an immediate full refund.`}
                     </p>
                   </div>
                 )}
@@ -407,21 +407,20 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
         <section className="mt-20 p-8 sm:p-12 bg-zinc-950 text-white border border-zinc-800 relative overflow-hidden">
           <div className="relative z-10 max-w-3xl">
             <span className="text-xs font-bold tracking-[0.28em] uppercase text-[#C5A880] block mb-3">
-              Unrivaled Luxury Experience
+              {settings?.trialGuaranteeSubtitle || "Unrivaled Luxury Experience"}
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-light tracking-tight mb-4">
-              Test on Your Skin for 24 Hours with Zero Risk
+              {settings?.trialGuaranteeTitle || "Test on Your Skin for 24 Hours with Zero Risk"}
             </h2>
             <p className="text-zinc-300 font-light text-sm leading-relaxed mb-6">
-              Haute Parfumerie is personal. That is why every flacon of {perfume.name} is shipped alongside a complimentary 2ml sample vial outside the sealed cellophane box. 
-              Enjoy the fragrance at home before breaking the seal.
+              {settings?.trialGuaranteeDescription || `Haute Parfumerie is personal. That is why every flacon of ${perfume.name} is shipped alongside a complimentary 2ml sample vial outside the sealed cellophane box. Enjoy the fragrance at home before breaking the seal.`}
             </p>
             <div className="flex flex-wrap gap-4 text-xs font-bold tracking-widest uppercase text-zinc-200">
               <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#C5A880]" /> 100% Full Refund if Unopened
+                <Check className="w-4 h-4 text-[#C5A880]" /> {settings?.trialGuaranteeBullet1 || "100% Full Refund if Unopened"}
               </span>
               <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-[#C5A880]" /> Free Courier Return Pickup
+                <Check className="w-4 h-4 text-[#C5A880]" /> {settings?.trialGuaranteeBullet2 || "Free Courier Return Pickup"}
               </span>
             </div>
           </div>
@@ -470,7 +469,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes }: Perfum
                     <img 
                       src={rel.image} 
                       alt={rel.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                     />
                     <span className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-mono text-zinc-800 border border-zinc-200">
                       50ml

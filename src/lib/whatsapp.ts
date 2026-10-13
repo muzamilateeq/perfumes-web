@@ -96,7 +96,7 @@ export function generateCartWhatsAppMessage(
     lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━");
   }
 
-  lines.push("Salam! Please confirm my order and share delivery dispatch tracking.");
+  lines.push("Hello! Please confirm my order and share delivery dispatch tracking.");
 
   return lines.join("\n");
 }
@@ -131,7 +131,7 @@ export function generateProductWhatsAppMessage(
   }
 
   lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━");
-  lines.push("Salam! I would like to order this flacon. Please let me know how soon it can be delivered to my city.");
+  lines.push("Hello! I would like to order this flacon. Please let me know how soon it can be delivered to my city.");
 
   return lines.join("\n");
 }
@@ -168,7 +168,7 @@ export function generateConfirmedOrderWhatsAppMessage(
   lines.push(`💰 *Total Payable at Doorstep:* *PKR ${totalAmount.toLocaleString()}*`);
   lines.push(`📦 *Dispatched with:* 2ml Matching Tester Vial`);
   lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━");
-  lines.push("Salam! I have submitted this order on your website. Please verify and confirm dispatch.");
+  lines.push("Hello! I have submitted this order on your website. Please verify and confirm dispatch.");
 
   return lines.join("\n");
 }
@@ -180,7 +180,7 @@ export function generateConsultationWhatsAppMessage(topic?: string): string {
   const lines = [
     "🕊️ *BESPOKE SCENT CONSULTATION — AURA FRAGRANCES* 🕊️",
     "━━━━━━━━━━━━━━━━━━━━━━━━━",
-    "Salam Aura Concierge!",
+    "Hello Aura Concierge,",
     topic 
       ? `I would like personalized advice regarding: *${topic}*.`
       : "I need assistance selecting the ideal Extrait de Parfum for my preference.",
@@ -199,7 +199,7 @@ export function generateOrderTrackingWhatsAppMessage(orderRef?: string): string 
   const lines = [
     "📦 *ORDER STATUS & TRACKING INQUIRY* 📦",
     "━━━━━━━━━━━━━━━━━━━━━━━━━",
-    "Salam Aura Team,",
+    "Hello Aura Team,",
     orderRef 
       ? `I would like to track my order: *#${orderRef}*.`
       : "I would like to track my recent order dispatch status.",

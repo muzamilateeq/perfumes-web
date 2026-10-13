@@ -35,6 +35,7 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import HeaderSearch from "@/components/HeaderSearch";
 import { PERFUMES_DATA, DISCOVERY_SET_ITEM, type PerfumeItem } from "@/lib/perfumes";
+import { DEFAULT_STORE_SETTINGS, type StoreSettings } from "@/lib/storeTypes";
 import { 
   buildWhatsAppUrl, 
   generateCartWhatsAppMessage, 
@@ -52,13 +53,19 @@ interface CartItem {
 
 export default function LuxuryBrandStorefront() {
   const [perfumes, setPerfumes] = useState<PerfumeItem[]>(PERFUMES_DATA);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
 
   // Live Sync with Admin Panel updates
   useEffect(() => {
     getAdminDataAction()
       .then((data) => {
-        if (data?.success && data.products && data.products.length > 0) {
-          setPerfumes(data.products);
+        if (data?.success) {
+          if (data.products && data.products.length > 0) {
+            setPerfumes(data.products);
+          }
+          if (data.settings) {
+            setStoreSettings(data.settings);
+          }
         }
       })
       .catch(() => {});
@@ -414,7 +421,7 @@ export default function LuxuryBrandStorefront() {
                       <img 
                         src={product.image} 
                         alt={product.name}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0"
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
                     </Link>
                     
@@ -684,8 +691,8 @@ export default function LuxuryBrandStorefront() {
           <div className="lg:col-span-6 relative aspect-square sm:aspect-[4/3] overflow-hidden border border-zinc-800 shadow-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-              src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=1200" 
-              alt="Discovery Coffret Box" 
+              src="/images/discovery-box.jpg" 
+              alt="Aura Discovery Coffret Box with 6 Mini Samples" 
               className="w-full h-full object-cover"
             />
           </div>
@@ -705,47 +712,63 @@ export default function LuxuryBrandStorefront() {
               className="w-full h-full object-cover grayscale-[0.2]"
             />
             <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 bg-white/95 backdrop-blur-md p-4 sm:p-6 border border-zinc-200 shadow-sm">
-              <p className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] mb-1">Cold Maceration Process</p>
-              <p className="text-xs font-semibold text-zinc-900">Each batch is preserved in chilled stainless drums for 90 days to eliminate sharp alcohol odors.</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] mb-1">
+                {storeSettings.storyProcessBadge || "Cold Maceration Process"}
+              </p>
+              <p className="text-xs font-semibold text-zinc-900">
+                {storeSettings.storyProcessText || "Each batch is preserved in chilled stainless drums for 90 days to eliminate sharp alcohol odors."}
+              </p>
             </div>
           </div>
 
           <div className="lg:col-span-6">
             <div className="flex items-center gap-3 mb-3 sm:mb-4">
               <span className="h-[1px] w-6 sm:w-8 bg-zinc-900"></span>
-              <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#8C7355]">The Standards</span>
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#8C7355]">
+                {storeSettings.storySubtitle || "The Standards"}
+              </span>
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-zinc-950 mb-6 sm:mb-8 leading-tight">
-              Why Aura Stands Apart <br/>
-              <span className="italic font-normal">From Mass Retailers.</span>
+              {storeSettings.storyTitle || "Why Aura Stands Apart From Mass Retailers."}
             </h2>
             <p className="text-zinc-600 font-light text-sm sm:text-base leading-relaxed mb-8 sm:mb-10">
-              Commercial perfumes flood the market with watered-down 12% Eau de Parfum designed to vanish within three hours so you spray more. 
-              At Aura, we formulate strictly at <strong>Extrait de Parfum (30%+ concentration)</strong> — an uncompromising tier of perfumery reserved for true connoisseurs.
+              {storeSettings.storyDescription || "Commercial perfumes flood the market with watered-down 12% Eau de Parfum designed to vanish within three hours so you spray more. At Aura, we formulate strictly at Extrait de Parfum (30%+ concentration) — an uncompromising tier of perfumery reserved for true connoisseurs."}
             </p>
 
             <div className="space-y-5 sm:space-y-6 border-t border-zinc-200 pt-6 sm:pt-8">
               <div className="flex gap-3 sm:gap-4">
                 <span className="text-xs font-mono font-bold text-[#8C7355] w-6 sm:w-8 shrink-0">01</span>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">Authentic Grasse Absolutes</h4>
-                  <p className="text-xs text-zinc-600 font-light leading-relaxed">We source natural botanical concentrates from historical family distilleries in Southern France.</p>
+                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">
+                    {storeSettings.storyPoint1Title || "Authentic Grasse Absolutes"}
+                  </h4>
+                  <p className="text-xs text-zinc-600 font-light leading-relaxed">
+                    {storeSettings.storyPoint1Text || "We source natural botanical concentrates from historical family distilleries in Southern France."}
+                  </p>
                 </div>
               </div>
 
               <div className="flex gap-3 sm:gap-4">
                 <span className="text-xs font-mono font-bold text-[#8C7355] w-6 sm:w-8 shrink-0">02</span>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">Aged Assamese & Cambodian Ouds</h4>
-                  <p className="text-xs text-zinc-600 font-light leading-relaxed">No synthetic burning rubber odor. Only pure, sweet, aged natural agarwood resin.</p>
+                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">
+                    {storeSettings.storyPoint2Title || "Aged Assamese & Cambodian Ouds"}
+                  </h4>
+                  <p className="text-xs text-zinc-600 font-light leading-relaxed">
+                    {storeSettings.storyPoint2Text || "No synthetic burning rubber odor. Only pure, sweet, aged natural agarwood resin."}
+                  </p>
                 </div>
               </div>
 
               <div className="flex gap-3 sm:gap-4">
                 <span className="text-xs font-mono font-bold text-[#8C7355] w-6 sm:w-8 shrink-0">03</span>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">Try First Guarantee</h4>
-                  <p className="text-xs text-zinc-600 font-light leading-relaxed">Every bottle comes with a matching free tester vial. Test the vial first; if you dislike it, return the sealed bottle for a 100% refund.</p>
+                  <h4 className="text-xs sm:text-sm font-bold tracking-wider uppercase text-zinc-950 mb-1">
+                    {storeSettings.storyPoint3Title || "Try First Guarantee"}
+                  </h4>
+                  <p className="text-xs text-zinc-600 font-light leading-relaxed">
+                    {storeSettings.storyPoint3Text || "Every bottle comes with a matching free tester vial. Test the vial first; if you dislike it, return the sealed bottle for a 100% refund."}
+                  </p>
                 </div>
               </div>
             </div>

@@ -75,7 +75,7 @@ export default function DiscoveryPage() {
     `Voucher: 100% Redeemable (PKR 4,500 toward any 50ml flacon)\n` +
     `Delivery: Free Express Nationwide (COD)\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `Salam! I would like to order the Discovery Box. Please share delivery details.`
+    `Hello! I would like to order the Discovery Box. Please share delivery details.`
   );
 
   return (
@@ -142,8 +142,8 @@ export default function DiscoveryPage() {
             <div className="lg:col-span-5 relative aspect-square sm:aspect-[4/3] lg:aspect-square overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&q=80&w=1200" 
-                alt="Aura Discovery Coffret Box" 
+                src="/images/discovery-box.jpg" 
+                alt="Aura Discovery Coffret Box with 6 Mini Samples" 
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-6 left-6 right-6 bg-black/85 backdrop-blur-md p-4 border border-white/15">
@@ -178,7 +178,7 @@ export default function DiscoveryPage() {
                     <img 
                       src={p.image} 
                       alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[0.15] group-hover:grayscale-0" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                     />
                     <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 bg-zinc-950 text-white text-[8px] sm:text-[9px] font-bold tracking-wider uppercase">
                       0{index + 1}
@@ -295,7 +295,7 @@ export default function DiscoveryPage() {
                   Thank you, {formData.name}. Your box will be packed in our sealed black coffret and dispatched within 24 hours.
                 </p>
                 <a
-                  href={buildWhatsAppUrl(`Salam! I ordered Discovery Coffret #${orderRef}. Please confirm dispatch timeline.`)}
+                  href={buildWhatsAppUrl(`Hello! I placed an order for Discovery Coffret #${orderRef}. Please confirm dispatch timeline.`)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider hover:bg-emerald-600 transition-colors shadow-md"

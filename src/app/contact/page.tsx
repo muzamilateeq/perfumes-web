@@ -36,7 +36,7 @@ export default function ContactPage() {
       `📋 *Topic:* ${formData.subject}\n` +
       `💬 *Inquiry:* ${formData.message}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `Salam! I would like assistance with this inquiry.`;
+      `Hello! I would like assistance with this inquiry.`;
 
     window.open(buildWhatsAppUrl(whatsappMsg), "_blank");
     setSubmitted(true);
@@ -82,7 +82,7 @@ export default function ContactPage() {
                   Chat live with our certified master fragrance advisors. Ideal for rapid recommendations, tracking updates, and doorstep Cash on Delivery orders.
                 </p>
                 <a
-                  href={buildWhatsAppUrl("Salam Aura Concierge! I would like to connect with an advisor.")}
+                  href={buildWhatsAppUrl("Hello Aura Concierge, I would like to connect with a fragrance advisor.")}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xs text-xs font-bold tracking-[0.2em] uppercase transition-colors flex items-center justify-center gap-2 shadow-sm"

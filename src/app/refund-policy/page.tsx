@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RefundPolicyPage() {
   const returnWhatsappUrl = buildWhatsAppUrl(
-    "Salam Aura Concierge! I would like assistance with an exchange or return inquiry for my flacon."
+    "Hello Aura Concierge, I would like assistance with an exchange or return inquiry for my flacon."
   );
 
   return (

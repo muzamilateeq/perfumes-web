@@ -1,40 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { PERFUMES_DATA, DISCOVERY_SET_ITEM, PerfumeItem } from "./perfumes";
-
-export interface StoreSettings {
-  storeName: string;
-  whatsappNumber: string;
-  supportPhone: string;
-  announcementTicker: string;
-  tickerActive: boolean;
-  freeShippingEnabled: boolean;
-  discoveryPrice: number;
-  codEnabled: boolean;
-  mobileWalletsEnabled: boolean;
-  bankTransferEnabled: boolean;
-  curatorNote: string;
-}
-
-export interface StoreOrder {
-  id: string;
-  orderNumber: string;
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
-  customerCity: string;
-  paymentMethod: string;
-  notes?: string;
-  total: number;
-  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-  items: {
-    productId?: number | string;
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
-  createdAt: string;
-}
+import { StoreSettings, StoreOrder, DEFAULT_STORE_SETTINGS } from "./storeTypes";
+export type { StoreSettings, StoreOrder };
+export { DEFAULT_STORE_SETTINGS };
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
@@ -46,20 +15,6 @@ function ensureDirectoryExists() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 }
-
-export const DEFAULT_STORE_SETTINGS: StoreSettings = {
-  storeName: "Aura Haute Parfumerie",
-  whatsappNumber: "03098541632",
-  supportPhone: "+92 309 8541632",
-  announcementTicker: "COMPLIMENTARY EXPRESS DELIVERY NATIONWIDE • CASH ON DELIVERY (COD) • 100% EXTRAIT DE PARFUM (30%+ OIL) • FREE TESTER VIAL INCLUDED",
-  tickerActive: true,
-  freeShippingEnabled: true,
-  discoveryPrice: 3500,
-  codEnabled: true,
-  mobileWalletsEnabled: true,
-  bankTransferEnabled: true,
-  curatorNote: "Artisanal Haute Parfumerie engineered for enduring distinction. Formulated in Grasse, France; hand-finished in Karachi, Pakistan."
-};
 
 // 1. PRODUCTS MANAGEMENT
 export function getStoreProducts(): PerfumeItem[] {

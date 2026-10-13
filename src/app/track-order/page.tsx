@@ -93,50 +93,50 @@ export default function TrackOrderPage() {
       case "PENDING":
         return {
           label: "PENDING VERIFICATION",
-          urduNote: "Order receive ho chuka hai • Verification pending",
+          subTitle: "Order Received • Verification in Progress",
           bg: "bg-amber-50 text-amber-900 border-amber-300",
           dot: "bg-amber-500",
-          desc: "Aapka order hamare dispatch queue mein darj hai. Hamari team order confirmation aur parcel pack karne ki tayyari kar rahi hai."
+          desc: "Your order has been recorded in our dispatch queue. Our concierge team is verifying the shipping details and preparing your parcel for cold-packaging."
         };
       case "CONFIRMED":
         return {
           label: "VERIFIED & PACKED",
-          urduNote: "Order verify ho chuka hai • Packaging complete",
+          subTitle: "Order Verified • Luxury Packaging Complete",
           bg: "bg-blue-50 text-blue-900 border-blue-300",
           dot: "bg-blue-600",
-          desc: "Order details confirm ho chuki hain. Aapka flacon 2ml matching tester vial aur wax seal ke sath pack ho chuka hai."
+          desc: "Order details have been verified. Your flacon has been securely packaged with our signature wax seal and complimentary 2ml matching trial vial."
         };
       case "SHIPPED":
         return {
           label: "IN TRANSIT (DISPATCHED)",
-          urduNote: "Parcel courier ke hawale • Raste mein hai",
+          subTitle: "Handed to Courier • En Route",
           bg: "bg-purple-50 text-purple-900 border-purple-300",
           dot: "bg-purple-600",
-          desc: "Aapka parcel Express Courier (Trax / TCS) ko handover ho chuka hai aur aapke shehar ke liye dispatch ho chuka hai. 24-48 ghanton mein delivery mutawaqqa hai."
+          desc: "Your parcel has been handed over to Express Courier (Trax / TCS) and is currently in transit to your destination. Expected delivery within 24–48 hours."
         };
       case "DELIVERED":
         return {
           label: "DELIVERED SUCCESSFULLY",
-          urduNote: "Delivered • Payment collected",
+          subTitle: "Delivered to Doorstep • Payment Received",
           bg: "bg-emerald-50 text-emerald-900 border-emerald-300",
           dot: "bg-emerald-600",
-          desc: "Aapka parcel successfully aapke doorstep par deliver ho chuka hai aur Cash on Delivery receive ho chuki hai."
+          desc: "Your parcel has been successfully delivered to your doorstep, and Cash on Delivery payment has been completed."
         };
       case "CANCELLED":
         return {
           label: "CANCELLED",
-          urduNote: "Order cancel kar diya gaya hai",
+          subTitle: "Order Cancelled",
           bg: "bg-rose-50 text-rose-900 border-rose-300",
           dot: "bg-rose-600",
-          desc: "Ye order cancel ho chuka hai. Mazeed maloomat ke liye WhatsApp Concierge par rabta karein."
+          desc: "This order has been cancelled. For further assistance or to place a new order, please contact our WhatsApp Concierge."
         };
       default:
         return {
           label: status,
-          urduNote: "Order processing",
+          subTitle: "Order Processing",
           bg: "bg-zinc-100 text-zinc-900 border-zinc-300",
           dot: "bg-zinc-500",
-          desc: "Order is being processed by the concierge team."
+          desc: "Your order is currently being processed by our concierge team."
         };
     }
   };
@@ -157,7 +157,7 @@ export default function TrackOrderPage() {
               Track Your Aura Order
             </h1>
             <p className="text-xs sm:text-sm text-zinc-600 font-light mt-3 max-w-lg mx-auto leading-relaxed">
-              Apna <strong>Order Reference Number</strong> (e.g. <code>AUR-928104</code>) ya apna <strong>Mobile Number</strong> (e.g. <code>0300 1234567</code>) enter karein aur live status check karein.
+              Enter your <strong>Order Reference Number</strong> (e.g. <code>AUR-928104</code>) or your <strong>Mobile Number</strong> (e.g. <code>0300 1234567</code>) to check live courier dispatch status.
             </p>
           </div>
 
@@ -239,7 +239,7 @@ export default function TrackOrderPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-zinc-900">
-                        {badge.urduNote}
+                        {badge.subTitle}
                       </p>
                       <p className="text-xs text-zinc-600 max-w-xl font-light mt-1">
                         {badge.desc}
@@ -385,7 +385,7 @@ export default function TrackOrderPage() {
                 {/* Live WhatsApp Inquiry Action */}
                 <div className="pt-2 flex flex-col sm:flex-row gap-3">
                   <a
-                    href={buildWhatsAppUrl(`Salam! Tracking inquiry for Order #${result.orderNumber} (${result.customerName}, ${result.customerCity}). Status is *${result.status}*. Please provide courier rider delivery update.`)}
+                    href={buildWhatsAppUrl(`Hello Aura Team, I have a tracking inquiry regarding Order #${result.orderNumber} (${result.customerName}, ${result.customerCity}). Status is *${result.status}*. Please provide a courier dispatch update.`)}
                     target="_blank"
                     rel="noreferrer"
                     className="flex-1 py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-2.5 shadow-md"

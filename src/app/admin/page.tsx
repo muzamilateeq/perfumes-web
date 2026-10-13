@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
-import { getAdminDataAction } from "@/app/actions/admin";
+import { getAdminDataAction, verifyAdminSession } from "@/app/actions/admin";
 import AdminDashboardClient from "./AdminDashboardClient";
-import { DEFAULT_STORE_SETTINGS } from "@/lib/storeManager";
+import AdminLoginClient from "./AdminLoginClient";
+import { DEFAULT_STORE_SETTINGS } from "@/lib/storeTypes";
 import { PERFUMES_DATA } from "@/lib/perfumes";
 
 export const metadata: Metadata = {
@@ -9,7 +11,13 @@ export const metadata: Metadata = {
   description: "Official administrative management system for Aura Fragrances. Full control of products, orders, olfactory pyramids, and store configurations.",
 };
 
-export default async function AdminPage() {
+async function AdminContent() {
+  const isAuthenticated = await verifyAdminSession();
+
+  if (!isAuthenticated) {
+    return <AdminLoginClient />;
+  }
+
   const data = await getAdminDataAction();
 
   return (
@@ -18,5 +26,19 @@ export default async function AdminPage() {
       initialSettings={data.settings || DEFAULT_STORE_SETTINGS}
       initialOrders={data.orders || []}
     />
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FBFBF9] flex items-center justify-center text-xs font-mono text-zinc-400">
+          Verifying security session...
+        </div>
+      }
+    >
+      <AdminContent />
+    </Suspense>
   );
 }
