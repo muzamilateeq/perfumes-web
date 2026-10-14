@@ -13,11 +13,13 @@ import {
   ChevronRight, 
   Droplets, 
   ShieldCheck,
-  Compass
+  Compass,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { buildWhatsAppUrl, generateConsultationWhatsAppMessage } from "@/lib/whatsapp";
 import HeaderSearch from "@/components/HeaderSearch";
+import { useStore } from "@/context/StoreContext";
 
 interface SiteHeaderProps {
   cartCount?: number;
@@ -26,7 +28,18 @@ interface SiteHeaderProps {
 
 export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { wishlistCount, openWishlist, cartCount: storeCartCount, openCart: storeOpenCart } = useStore();
+  const effectiveCartCount = cartCount > 0 ? cartCount : storeCartCount;
+  const handleOpenCart = onOpenCart || storeOpenCart;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const displayCartCount = mounted ? effectiveCartCount : 0;
+  const displayWishlistCount = mounted ? wishlistCount : 0;
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -66,10 +79,10 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
 
       {/* 2. PRIMARY NAVIGATION */}
       <header className="sticky top-0 z-40 bg-[#FBFBF9]/95 backdrop-blur-xl border-b border-zinc-200 transition-all">
-        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2 lg:gap-4">
           
           {/* Left Column: Mobile Menu Toggle / Desktop Nav Links */}
-          <div className="flex items-center min-w-0">
+          <div className="flex items-center shrink min-w-0">
             {/* Hamburger Button for Mobile & Tablet */}
             <button
               type="button"
@@ -81,35 +94,29 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
               <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-800 hidden xs:inline">Menu</span>
             </button>
 
-            {/* Desktop Navigation Links (Only on lg screens and up to avoid cluttering logo) */}
-            <nav className="hidden lg:flex items-center gap-5 xl:gap-7">
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-4 xl:gap-6 2xl:gap-8">
               <Link 
-                href="/" 
-                className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors"
-              >
-                Home
-              </Link>
-              <Link 
-                href="/#collection" 
-                className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors"
+                href="/perfumes" 
+                className="text-xs font-bold tracking-[0.18em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors whitespace-nowrap"
               >
                 Collection
               </Link>
               <Link 
                 href="/discovery" 
-                className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors"
+                className="text-xs font-bold tracking-[0.18em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors whitespace-nowrap"
               >
                 Discovery Set
               </Link>
               <Link 
                 href="/about" 
-                className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors"
+                className="text-xs font-bold tracking-[0.18em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors whitespace-nowrap"
               >
                 The House
               </Link>
               <Link 
                 href="/track-order" 
-                className="flex items-center gap-1.5 text-xs font-bold tracking-[0.2em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors"
+                className="hidden xl:flex items-center gap-1.5 text-xs font-bold tracking-[0.18em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors whitespace-nowrap"
               >
                 <Truck className="w-3.5 h-3.5 text-[#8C7355] shrink-0" />
                 <span>Track</span>
@@ -118,52 +125,70 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
           </div>
 
           {/* Center Column: Unobstructed Brand Identity */}
-          <Link href="/" className="flex flex-col items-center group py-1 text-center shrink-0">
-            <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-light tracking-[0.24em] sm:tracking-[0.32em] uppercase text-zinc-950 group-hover:text-zinc-800 transition-colors">
+          <Link href="/" className="flex flex-col items-center group py-1 text-center shrink-0 px-2 sm:px-4">
+            <span className="font-serif text-2xl sm:text-3xl md:text-4xl font-light tracking-[0.24em] sm:tracking-[0.32em] uppercase text-zinc-950 group-hover:text-zinc-800 transition-colors whitespace-nowrap">
               Aura
             </span>
-            <span className="text-[7.5px] sm:text-[8.5px] font-bold tracking-[0.22em] sm:tracking-[0.32em] uppercase text-[#8C7355] mt-0.5">
+            <span className="text-[7.5px] sm:text-[8.5px] font-bold tracking-[0.22em] sm:tracking-[0.32em] uppercase text-[#8C7355] mt-0.5 whitespace-nowrap">
               Haute Parfumerie
             </span>
           </Link>
 
-          {/* Right Column: Search, WhatsApp & Shopping Bag */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3.5 lg:gap-4 shrink-0">
+          {/* Right Column: Search, WhatsApp, Track Icon, Wishlist & Shopping Bag */}
+          <div className="flex items-center justify-end gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
             {/* Open Live Perfume Search Bar (Desktop & Tablets) */}
             <div className="hidden sm:block">
               <HeaderSearch />
             </div>
 
+            {/* Quick Track Icon on tablet/smaller desktop where text link is hidden */}
+            <Link
+              href="/track-order"
+              className="hidden lg:flex xl:hidden p-2 text-zinc-700 hover:text-zinc-950 transition-colors items-center justify-center rounded-full hover:bg-zinc-100 shrink-0"
+              title="Track Order"
+              aria-label="Track Order"
+            >
+              <Truck className="w-4 h-4 text-[#8C7355]" />
+            </Link>
+
             <a 
               href={whatsappUrl}
               target="_blank" 
               rel="noreferrer"
-              className="hidden xl:flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase text-emerald-800 hover:text-emerald-950 transition-colors bg-emerald-50 px-3 py-2 border border-emerald-200"
+              className="hidden xl:flex items-center gap-1.5 text-xs font-bold tracking-widest uppercase text-emerald-800 hover:text-emerald-950 transition-colors bg-emerald-50 px-3 py-2 border border-emerald-200 whitespace-nowrap shrink-0"
             >
               <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
               <span>WhatsApp</span>
             </a>
 
-            {onOpenCart ? (
-              <button 
-                onClick={onOpenCart}
-                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-zinc-950 text-white text-[11px] sm:text-xs font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase hover:bg-zinc-800 transition-all shadow-md group shrink-0"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-300 group-hover:text-white" />
-                <span className="hidden sm:inline">Bag</span>
-                <span className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white text-zinc-950 rounded-full text-[9px] sm:text-[10px] font-bold">
-                  {cartCount}
+            {/* Wishlist Heart Button */}
+            <button 
+              type="button"
+              onClick={openWishlist}
+              className="relative p-2 text-zinc-700 hover:text-zinc-950 transition-colors flex items-center justify-center rounded-full hover:bg-zinc-100 shrink-0"
+              title="Curated Wishlist"
+              aria-label="Wishlist"
+            >
+              <Heart className={`w-4 h-4 sm:w-4.5 sm:h-4.5 transition-colors ${displayWishlistCount > 0 ? "fill-rose-500 text-rose-500" : "text-zinc-700"}`} />
+              {displayWishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center bg-rose-500 text-white rounded-full text-[9px] font-bold shadow-xs">
+                  {displayWishlistCount}
                 </span>
-              </button>
-            ) : (
-              <Link
-                href="/#collection"
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-zinc-950 text-white text-[11px] sm:text-xs font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase hover:bg-zinc-800 transition-all shadow-md shrink-0"
-              >
-                <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-300" />
-                <span>Shop</span>
-              </Link>
-            )}
+              )}
+            </button>
+
+            {/* Shopping Bag Button */}
+            <button 
+              type="button"
+              onClick={handleOpenCart}
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-zinc-950 text-white text-[11px] sm:text-xs font-bold tracking-[0.16em] sm:tracking-[0.22em] uppercase hover:bg-zinc-800 transition-all shadow-md group shrink-0 whitespace-nowrap"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-300 group-hover:text-white" />
+              <span className="hidden sm:inline">Bag</span>
+              <span className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center bg-white text-zinc-950 rounded-full text-[9px] sm:text-[10px] font-bold">
+                {displayCartCount}
+              </span>
+            </button>
           </div>
 
         </div>
@@ -228,7 +253,7 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
                   </Link>
 
                   <Link
-                    href="/#collection"
+                    href="/perfumes"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center justify-between py-3 px-3 hover:bg-white rounded-xs text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 border-b border-zinc-100"
                   >
@@ -238,6 +263,23 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
                     </div>
                     <span className="text-[9px] font-mono text-zinc-400">6 Extraits</span>
                   </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      openWishlist();
+                    }}
+                    className="flex items-center justify-between w-full py-3 px-3 hover:bg-white rounded-xs text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 border-b border-zinc-100 text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
+                      <span>Curated Wishlist</span>
+                    </div>
+                    <span className="text-[9px] font-mono text-zinc-700 bg-zinc-200/80 px-2 py-0.5 rounded-full font-bold">
+                      {wishlistCount}
+                    </span>
+                  </button>
 
                   <Link
                     href="/discovery"

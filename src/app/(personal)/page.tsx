@@ -43,6 +43,7 @@ import {
   generateConfirmedOrderWhatsAppMessage, 
   generateConsultationWhatsAppMessage 
 } from "@/lib/whatsapp";
+import { useStore } from "@/context/StoreContext";
 
 type Perfume = PerfumeItem;
 
@@ -101,14 +102,13 @@ export default function LuxuryBrandStorefront() {
   const [orderId, setOrderId] = useState<string>("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
-  const [wishlist, setWishlist] = useState<number[]>([]);
+  const store = useStore();
+  const wishlist = store.wishlist;
 
   const toggleWishlist = (e: React.MouseEvent, productId: number) => {
     e.preventDefault();
     e.stopPropagation();
-    setWishlist(prev => 
-      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
-    );
+    store.toggleWishlist(productId);
   };
 
   // Fragrance Match Quiz State

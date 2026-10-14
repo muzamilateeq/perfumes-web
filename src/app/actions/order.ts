@@ -39,8 +39,18 @@ export async function createOrderAction(data: OrderInput) {
   };
   saveStoreOrder(storeOrderRecord);
 
-  // 2. Also try Prisma Database if available
+  // 2. Also save to Supabase Database with full line items linked to products
   try {
+    const trackingCode = "TRX-" + generatedOrderNumber.replace(/\D/g, "") + "94";
+
+    const orderItemsData = Array.isArray(data.items) && data.items.length > 0
+      ? data.items.map((it) => ({
+          productId: String(it.productId || "99"),
+          quantity: it.quantity || 1,
+          price: it.price || 0,
+        }))
+      : [];
+
     await prisma.order.create({
       data: {
         orderNumber: generatedOrderNumber,
@@ -52,6 +62,14 @@ export async function createOrderAction(data: OrderInput) {
         notes: data.notes || null,
         total: data.total,
         status: "PENDING",
+        trackingNumber: trackingCode,
+        ...(orderItemsData.length > 0
+          ? {
+              items: {
+                create: orderItemsData,
+              },
+            }
+          : {}),
       },
     });
   } catch (error: any) {
@@ -117,7 +135,11 @@ export async function trackOrderAction(query: string) {
         ],
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
@@ -133,7 +155,12 @@ export async function trackOrderAction(query: string) {
           paymentMethod: order.paymentMethod,
           total: Number(order.total),
           status: order.status,
-          items: order.items || [],
+          items: (order.items || []).map((it) => ({
+            productId: it.productId,
+            name: it.product?.title || "Signature Extrait",
+            price: Number(it.price),
+            quantity: it.quantity,
+          })),
           notes: order.notes || null,
           trackingNumber: order.trackingNumber || "TRX-" + Math.floor(10000000 + Math.random() * 90000000),
           createdAt: order.createdAt.toISOString(),

@@ -14,6 +14,7 @@ import {
 import { PerfumeItem } from "@/lib/perfumes";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "muzamilateeq423@gmail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Muzamil@aura";
@@ -111,6 +112,31 @@ export async function saveProductAction(product: PerfumeItem) {
     };
 
     const res = saveStoreProduct(updatedProduct);
+
+    // Also sync to Supabase Database
+    try {
+      await prisma.product.upsert({
+        where: { id: String(res.product.id) },
+        update: {
+          title: res.product.name,
+          description: res.product.description || res.product.story || "",
+          price: priceNum,
+          images: [res.product.bannerImage || res.product.image || "/banners/oud-royale.png"],
+        },
+        create: {
+          id: String(res.product.id),
+          title: res.product.name,
+          description: res.product.description || res.product.story || "",
+          price: priceNum,
+          stock: 50,
+          images: [res.product.bannerImage || res.product.image || "/banners/oud-royale.png"],
+          businessId: "biz-aura",
+        },
+      });
+    } catch (dbErr: any) {
+      console.warn("Prisma product sync notice:", dbErr?.message);
+    }
+
     revalidatePath("/admin");
     revalidatePath("/");
     revalidatePath("/perfumes");
@@ -133,6 +159,16 @@ export async function saveProductAction(product: PerfumeItem) {
 export async function deleteProductAction(id: number) {
   try {
     const success = deleteStoreProduct(id);
+
+    // Also delete from Supabase Database
+    try {
+      await prisma.product.delete({
+        where: { id: String(id) },
+      });
+    } catch (dbErr: any) {
+      console.warn("Prisma product delete notice:", dbErr?.message);
+    }
+
     revalidatePath("/admin");
     revalidatePath("/");
     revalidatePath("/perfumes");
@@ -174,6 +210,20 @@ export async function saveSettingsAction(settings: Partial<StoreSettings>) {
 export async function updateOrderStatusAction(orderNumber: string, status: StoreOrder["status"]) {
   try {
     const res = updateStoreOrderStatus(orderNumber, status);
+
+    // Also sync updated status to Supabase Database
+    try {
+      const mappedStatus = status === "CONFIRMED" ? "PAID" : status;
+      await prisma.order.update({
+        where: { orderNumber },
+        data: {
+          status: mappedStatus as any,
+        },
+      });
+    } catch (dbErr: any) {
+      console.warn("Prisma order status update notice:", dbErr?.message);
+    }
+
     revalidatePath("/admin");
     revalidatePath("/track-order");
 

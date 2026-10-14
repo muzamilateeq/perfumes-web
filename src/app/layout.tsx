@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { StoreProvider } from "@/context/StoreContext";
+import WishlistDrawer from "@/components/WishlistDrawer";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -37,8 +39,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        {children}
+        <StoreProvider>
+          {children}
+          <WishlistDrawer />
+        </StoreProvider>
       </body>
     </html>
   );
 }
+
