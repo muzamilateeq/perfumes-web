@@ -126,11 +126,16 @@ export async function saveProductAction(product: PerfumeItem) {
     const priceFormatted = product.price.startsWith("PKR") ? product.price : `PKR ${priceNum.toLocaleString()}`;
 
     const chosenImage = (product.image || product.bannerImage || "/banners/oud-royale.png").trim();
+    const rawImages = Array.isArray(product.images) && product.images.length > 0
+      ? product.images.filter(Boolean)
+      : [chosenImage];
+    const primaryImg = rawImages[0] || chosenImage;
 
     const updatedProduct: PerfumeItem = {
       ...product,
-      image: chosenImage,
-      bannerImage: chosenImage,
+      image: primaryImg,
+      bannerImage: primaryImg,
+      images: rawImages,
       priceNum,
       price: priceFormatted,
       stock: product.stock !== undefined ? product.stock : 50,
@@ -154,7 +159,7 @@ export async function saveProductAction(product: PerfumeItem) {
           batchNumber: updatedProduct.batchNumber,
           maturation: updatedProduct.maturation,
           lowStockAlert: updatedProduct.lowStockAlert,
-          images: [chosenImage],
+          images: rawImages,
         },
         create: {
           id: String(res.product.id),
@@ -165,7 +170,7 @@ export async function saveProductAction(product: PerfumeItem) {
           batchNumber: updatedProduct.batchNumber,
           maturation: updatedProduct.maturation,
           lowStockAlert: updatedProduct.lowStockAlert,
-          images: [chosenImage],
+          images: rawImages,
           businessId: "biz-aura",
         },
       });

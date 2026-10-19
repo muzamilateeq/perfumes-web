@@ -16,6 +16,7 @@ import {
   ArrowRight, 
   Gift, 
   ChevronRight,
+  ChevronLeft,
   Clock,
   Droplet,
   Compass,
@@ -49,6 +50,85 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
   const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"pyramid" | "story" | "guarantee">("pyramid");
+
+  // Multi-Image Gallery State
+  const galleryImages = (perfume.images && perfume.images.length > 0)
+    ? perfume.images
+    : (perfume.image ? [perfume.image] : []);
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+  const currentImage = galleryImages[activeImageIndex] || perfume.image;
+
+  const handlePrevImage = () => {
+    setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+  };
+  const handleNextImage = () => {
+    setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const renderFormattedDescription = (desc: string) => {
+    if (!desc) return null;
+    if (!desc.includes("\n") && !desc.includes("#") && !desc.includes("*") && !desc.includes(">") && !desc.includes("- ")) {
+      return <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">{desc}</p>;
+    }
+
+    const lines = desc.split("\n");
+    return (
+      <div className="space-y-2 text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <div key={idx} className="h-1" />;
+
+          if (trimmed.startsWith("### ")) {
+            return (
+              <h4 key={idx} className="text-xs font-bold uppercase tracking-widest text-[#8C7355] pt-2 font-sans">
+                {trimmed.replace("### ", "")}
+              </h4>
+            );
+          }
+          if (trimmed.startsWith("## ")) {
+            return (
+              <h3 key={idx} className="text-sm sm:text-base font-serif font-medium text-zinc-950 pt-2 border-b border-zinc-200 pb-1">
+                {trimmed.replace("## ", "")}
+              </h3>
+            );
+          }
+          if (trimmed.startsWith("> ")) {
+            return (
+              <blockquote key={idx} className="pl-3 py-1 border-l-2 border-[#C5A880] italic text-zinc-700 bg-[#C5A880]/5 font-serif my-1 rounded-r">
+                {trimmed.replace(/^>\s*/, "")}
+              </blockquote>
+            );
+          }
+          if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+            const content = trimmed.replace(/^[-*]\s*/, "");
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-1 text-zinc-700">
+                <span className="text-[#C5A880] mt-1 text-[10px]">◆</span>
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: content
+                      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-zinc-900">$1</strong>')
+                      .replace(/\*(.*?)\*/g, '<em class="italic text-zinc-800">$1</em>'),
+                  }}
+                />
+              </div>
+            );
+          }
+
+          return (
+            <p
+              key={idx}
+              dangerouslySetInnerHTML={{
+                __html: line
+                  .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-zinc-900">$1</strong>')
+                  .replace(/\*(.*?)\*/g, '<em class="italic text-zinc-800">$1</em>'),
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  };
   
   const handleAddToBag = () => {
     store.addToCart(perfume, quantity);
@@ -133,30 +213,60 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16 items-start">
           
-          {/* Left Column: Visual Flacon Display */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="relative aspect-[4/5] bg-zinc-100 border border-zinc-200 shadow-xl overflow-hidden group">
+          {/* Left Column: Visual Flacon Display & Multi-Angle Gallery */}
+          <div className="lg:col-span-6 space-y-4">
+            <div className="relative aspect-[4/5] bg-zinc-100 border border-zinc-200 shadow-xl overflow-hidden group select-none">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={perfume.image} 
-                alt={`${perfume.name} Extrait de Parfum`}
+                key={currentImage}
+                src={currentImage} 
+                alt={`${perfume.name} Extrait de Parfum - Angle ${activeImageIndex + 1}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
 
               {/* Badge */}
               {perfume.badge && (
-                <span className="absolute top-4 sm:top-6 left-4 sm:left-6 bg-zinc-950 text-white px-3 sm:px-4 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.25em] uppercase shadow-lg">
+                <span className="absolute top-4 sm:top-6 left-4 sm:left-6 bg-zinc-950 text-white px-3 sm:px-4 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-[0.25em] uppercase shadow-lg z-10">
                   {perfume.badge}
                 </span>
               )}
 
-              {/* Concentration Tag */}
-              <span className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white/95 backdrop-blur-md px-3 sm:px-3.5 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#8C7355] border border-zinc-200 uppercase">
-                {perfume.concentration}
-              </span>
+              {/* Concentration & Angle Counter Tag */}
+              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex items-center gap-2 z-10">
+                {galleryImages.length > 1 && (
+                  <span className="bg-zinc-950/80 backdrop-blur-md text-[#C5A880] px-2.5 py-1.5 text-[9px] font-mono tracking-widest rounded-xs border border-[#C5A880]/30 uppercase font-bold">
+                    {activeImageIndex + 1} / {galleryImages.length}
+                  </span>
+                )}
+                <span className="bg-white/95 backdrop-blur-md px-3 sm:px-3.5 py-1.5 text-[9px] sm:text-[10px] font-bold tracking-widest text-[#8C7355] border border-zinc-200 uppercase">
+                  {perfume.concentration}
+                </span>
+              </div>
+
+              {/* Prev / Next Navigation Arrows for Multi-image */}
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    aria-label="Previous flacon photo"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-zinc-900 border border-zinc-200/80 shadow-lg flex items-center justify-center transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-zinc-950" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    aria-label="Next flacon photo"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-zinc-900 border border-zinc-200/80 shadow-lg flex items-center justify-center transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 z-10 cursor-pointer"
+                  >
+                    <ChevronRight className="w-5 h-5 text-zinc-950" />
+                  </button>
+                </>
+              )}
 
               {/* Bottom Purity Overlay */}
-              <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950/80 via-zinc-950/40 to-transparent text-white flex justify-between items-end">
+              <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950/85 via-zinc-950/40 to-transparent text-white flex justify-between items-end pointer-events-none">
                 <div>
                   <p className="text-[10px] font-mono tracking-widest uppercase text-zinc-300">Volume</p>
                   <p className="font-serif text-base sm:text-lg font-light tracking-wide">{perfume.volume}</p>
@@ -167,6 +277,31 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
                 </div>
               </div>
             </div>
+
+            {/* Interactive Thumbnail Gallery Strip */}
+            {galleryImages.length > 1 && (
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1 no-scrollbar select-none">
+                {galleryImages.map((imgUrl, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActiveImageIndex(i)}
+                    className={`relative w-16 sm:w-20 aspect-[4/5] rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                      activeImageIndex === i
+                        ? "border-[#C5A880] ring-2 ring-[#C5A880]/30 shadow-md scale-105"
+                        : "border-zinc-200 opacity-60 hover:opacity-100 hover:border-zinc-400"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imgUrl}
+                      alt={`${perfume.name} thumbnail ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Micro Highlights Bar */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
@@ -235,9 +370,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
                 <span>Stock: <strong className="text-emerald-700">{perfume.stock !== undefined ? `${perfume.stock} Units` : "In Stock"}</strong></span>
               </div>
 
-              <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
-                {perfume.description}
-              </p>
+              {renderFormattedDescription(perfume.description)}
             </div>
 
             {/* Performance Specifications */}

@@ -43,10 +43,16 @@ export function saveStoreProduct(product: PerfumeItem): { success: boolean; prod
     const existingIndex = products.findIndex((p) => p.id === product.id || p.slug === product.slug);
 
     const chosenImage = (product.image || product.bannerImage || "").trim();
+    const rawImages = Array.isArray(product.images) && product.images.length > 0
+      ? product.images.filter(Boolean)
+      : (chosenImage ? [chosenImage] : []);
+    const primaryImg = rawImages[0] || chosenImage || product.image;
+
     const finalProduct: PerfumeItem = {
       ...product,
-      image: chosenImage || product.image,
-      bannerImage: chosenImage || product.bannerImage,
+      image: primaryImg,
+      bannerImage: primaryImg,
+      images: rawImages.length > 0 ? rawImages : [primaryImg],
     };
 
     if (existingIndex >= 0) {

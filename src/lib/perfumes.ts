@@ -7,6 +7,7 @@ export interface PerfumeItem {
   priceNum: number;
   image: string;
   bannerImage?: string;
+  images?: string[];
   notes: string;
   topNotes: string;
   heartNotes: string;

@@ -47,8 +47,13 @@ import {
   Percent,
   Upload,
   Loader2,
-  Menu
+  Menu,
+  Crop,
+  Image as ImageIcon,
+  ArrowLeftRight
 } from "lucide-react";
+import ImageStudioModal from "@/components/admin/ImageStudioModal";
+import RichDescriptionEditor from "@/components/admin/RichDescriptionEditor";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { PerfumeItem, PERFUMES_DATA } from "@/lib/perfumes";
@@ -263,6 +268,109 @@ export default function AdminDashboardClient({
   const [productSearch, setProductSearch] = useState<string>("");
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>("All");
 
+  // Image Studio & Cropper Modal State
+  const [isStudioOpen, setIsStudioOpen] = useState<boolean>(false);
+  const [studioTargetIndex, setStudioTargetIndex] = useState<number | "new">("new");
+  const [studioInitialImage, setStudioInitialImage] = useState<string>("");
+
+  const handleOpenStudioForNew = () => {
+    setStudioTargetIndex("new");
+    setStudioInitialImage("");
+    setIsStudioOpen(true);
+  };
+
+  const handleOpenStudioForExisting = (index: number) => {
+    if (!editingProduct) return;
+    const currentList = editingProduct.images && editingProduct.images.length > 0
+      ? editingProduct.images
+      : (editingProduct.image ? [editingProduct.image] : []);
+    setStudioTargetIndex(index);
+    setStudioInitialImage(currentList[index] || editingProduct.image || "");
+    setIsStudioOpen(true);
+  };
+
+  const handleStudioSave = (croppedUrl: string) => {
+    if (!editingProduct) return;
+    const currentList = editingProduct.images && editingProduct.images.length > 0
+      ? [...editingProduct.images]
+      : (editingProduct.image ? [editingProduct.image] : []);
+
+    let updatedImages: string[];
+    if (studioTargetIndex === "new") {
+      updatedImages = [...currentList, croppedUrl];
+    } else {
+      updatedImages = [...currentList];
+      updatedImages[studioTargetIndex] = croppedUrl;
+    }
+
+    setEditingProduct({
+      ...editingProduct,
+      image: updatedImages[0] || croppedUrl,
+      bannerImage: updatedImages[0] || croppedUrl,
+      images: updatedImages,
+    });
+
+    setIsStudioOpen(false);
+    showToast("Flacon picture cropped & saved to gallery!");
+  };
+
+  const handleSetAsCover = (index: number) => {
+    if (!editingProduct) return;
+    const currentList = editingProduct.images && editingProduct.images.length > 0
+      ? [...editingProduct.images]
+      : (editingProduct.image ? [editingProduct.image] : []);
+    if (index <= 0 || index >= currentList.length) return;
+
+    const selected = currentList[index];
+    const remaining = currentList.filter((_, i) => i !== index);
+    const reordered = [selected, ...remaining];
+
+    setEditingProduct({
+      ...editingProduct,
+      image: reordered[0],
+      bannerImage: reordered[0],
+      images: reordered,
+    });
+    showToast("Cover photo updated!");
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (!editingProduct) return;
+    const currentList = editingProduct.images && editingProduct.images.length > 0
+      ? [...editingProduct.images]
+      : (editingProduct.image ? [editingProduct.image] : []);
+
+    if (currentList.length <= 1) {
+      showToast("A perfume must have at least one flacon picture");
+      return;
+    }
+
+    const updated = currentList.filter((_, i) => i !== index);
+    setEditingProduct({
+      ...editingProduct,
+      image: updated[0] || "",
+      bannerImage: updated[0] || "",
+      images: updated,
+    });
+    showToast("Photo removed from gallery");
+  };
+
+  const handleAddDirectUrl = (url: string) => {
+    if (!editingProduct || !url.trim()) return;
+    const cleanUrl = url.trim();
+    const currentList = editingProduct.images && editingProduct.images.length > 0
+      ? [...editingProduct.images]
+      : (editingProduct.image ? [editingProduct.image] : []);
+    const updated = [...currentList, cleanUrl];
+    setEditingProduct({
+      ...editingProduct,
+      image: updated[0] || cleanUrl,
+      bannerImage: updated[0] || cleanUrl,
+      images: updated,
+    });
+    showToast("Photo URL added to gallery!");
+  };
+
   // Handle direct file upload for perfume image
   const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -280,16 +388,20 @@ export default function AdminDashboardClient({
 
       const data = await res.json();
       if (data.success && data.url) {
-        setEditingProduct((prev) =>
-          prev
-            ? {
-                ...prev,
-                image: data.url,
-                bannerImage: data.url,
-              }
-            : null
-        );
-        showToast("New perfume picture uploaded successfully!");
+        setEditingProduct((prev) => {
+          if (!prev) return null;
+          const currentList = prev.images && prev.images.length > 0 
+            ? [...prev.images] 
+            : (prev.image ? [prev.image] : []);
+          const updated = [...currentList, data.url];
+          return {
+            ...prev,
+            image: updated[0] || data.url,
+            bannerImage: updated[0] || data.url,
+            images: updated,
+          };
+        });
+        showToast("New perfume picture uploaded & added to gallery!");
       } else {
         showToast(data.error || "Failed to upload image");
       }
@@ -464,6 +576,7 @@ export default function AdminDashboardClient({
     price: "PKR 11,500",
     priceNum: 11500,
     image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=800",
+    images: ["https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&q=80&w=800"],
     notes: "Bergamot, Agarwood, Amber, Vanilla",
     topNotes: "Sparkling Citrus, Pink Peppercorn",
     heartNotes: "Precious Floral Absolute, Spices",
@@ -1357,7 +1470,10 @@ export default function AdminDashboardClient({
                     <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between gap-2">
                       <button
                         onClick={() => {
-                          setEditingProduct({ ...p });
+                          setEditingProduct({
+                            ...p,
+                            images: (p.images && p.images.length > 0) ? [...p.images] : (p.image ? [p.image] : [])
+                          });
                           setIsAddMode(false);
                         }}
                         className="px-4 py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 flex-1 justify-center shadow-xs"
@@ -2569,82 +2685,188 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                {/* Dynamic Image Upload & Picture Management */}
+                {/* Dynamic Multi-Image Gallery & Flacon Image Studio */}
                 <div className="p-4 sm:p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C7355] block">
-                        Flacon Visual Presentation
-                      </span>
-                      <h4 className="font-serif text-base font-medium text-zinc-950">
-                        Perfume Picture (Dynamic Upload & Live Sync)
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C7355] block">
+                          Flacon Visual Presentation
+                        </span>
+                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 bg-[#C5A880]/15 text-[#8C7355] rounded-full border border-[#C5A880]/30">
+                          {((editingProduct.images && editingProduct.images.length > 0) ? editingProduct.images : (editingProduct.image ? [editingProduct.image] : [])).length} {((editingProduct.images && editingProduct.images.length > 0) ? editingProduct.images : (editingProduct.image ? [editingProduct.image] : [])).length === 1 ? "Photo" : "Photos"}
+                        </span>
+                      </div>
+                      <h4 className="font-serif text-base font-medium text-zinc-950 mt-0.5">
+                        Multi-Image Gallery & Flacon Studio
                       </h4>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        Add 1 or more high-resolution bottle angles. The first photo is your primary catalog cover.
+                      </p>
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded">
-                      JPG, PNG, WEBP
-                    </span>
+
+                    {/* Action Buttons: Studio Crop & File Upload */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleOpenStudioForNew}
+                        className="px-3.5 py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Crop className="w-3.5 h-3.5 text-[#C5A880]" />
+                        <span>Studio Crop & Edit</span>
+                      </button>
+
+                      <label className="px-3 py-2 rounded-lg bg-white border border-zinc-200 hover:border-zinc-400 text-zinc-700 hover:text-zinc-950 text-xs font-bold tracking-wider uppercase cursor-pointer transition-colors flex items-center gap-1.5 shadow-2xs">
+                        {isUploadingImage ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5 text-zinc-500" />
+                        )}
+                        <span>{isUploadingImage ? "Uploading..." : "+ Add Photo"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={isUploadingImage}
+                          onChange={handleImageFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 items-start">
-                    {/* Live Thumbnail Preview */}
-                    <div className="relative w-28 h-32 rounded-lg bg-zinc-200 border border-zinc-300 overflow-hidden shrink-0 shadow-xs">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={editingProduct.image || "/banners/oud-royale.png"}
-                        alt={editingProduct.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <span className="absolute bottom-1 inset-x-1 text-center bg-zinc-950/85 text-white text-[8px] font-bold uppercase tracking-wider py-0.5 rounded-xs">
-                        Live Preview
-                      </span>
-                    </div>
+                  {/* Multi-Image Thumbnails Grid */}
+                  {(() => {
+                    const galleryImages = (editingProduct.images && editingProduct.images.length > 0)
+                      ? editingProduct.images
+                      : (editingProduct.image ? [editingProduct.image] : []);
 
-                    {/* Upload Controls & URL */}
-                    <div className="flex-1 space-y-3 w-full">
-                      {/* Direct Device Upload Button */}
-                      <div>
-                        <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase cursor-pointer transition-colors shadow-xs">
-                          {isUploadingImage ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
-                          ) : (
-                            <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
-                          )}
-                          <span>
-                            {isUploadingImage ? "Uploading New Picture..." : "Upload New Picture from Device"}
-                          </span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            disabled={isUploadingImage}
-                            onChange={handleImageFileUpload}
-                            className="hidden"
-                          />
-                        </label>
-                        <p className="text-[11px] text-zinc-500 mt-1">
-                          Click to select any perfume photo from your phone or laptop. It will dynamically save and reflect across the website!
-                        </p>
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-1">
+                        {galleryImages.map((imgUrl, idx) => (
+                          <div
+                            key={idx}
+                            className={`group relative rounded-xl border-2 overflow-hidden bg-white shadow-xs transition-all ${
+                              idx === 0
+                                ? "border-[#C5A880] ring-2 ring-[#C5A880]/20"
+                                : "border-zinc-200 hover:border-zinc-400"
+                            }`}
+                          >
+                            {/* Aspect 4:5 Container */}
+                            <div className="aspect-[4/5] relative bg-zinc-100 overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={imgUrl || "/banners/oud-royale.png"}
+                                alt={`Flacon view ${idx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+
+                              {/* Corner Badges */}
+                              <div className="absolute top-1.5 left-1.5 z-10">
+                                {idx === 0 ? (
+                                  <span className="px-1.5 py-0.5 bg-zinc-950/90 text-[#C5A880] text-[9px] font-bold uppercase tracking-wider rounded border border-[#C5A880]/40 shadow-xs flex items-center gap-1">
+                                    <Star className="w-2.5 h-2.5 fill-[#C5A880]" />
+                                    Cover
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 bg-zinc-950/75 text-white text-[9px] font-mono rounded">
+                                    #{idx + 1}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Hover Actions Overlay */}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2 z-20">
+                                <div className="flex justify-end gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenStudioForExisting(idx)}
+                                    className="p-1.5 bg-white/90 hover:bg-white text-zinc-900 rounded-md transition-colors"
+                                    title="Crop & Fine-tune in Studio"
+                                  >
+                                    <Crop className="w-3.5 h-3.5" />
+                                  </button>
+                                  {galleryImages.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveImage(idx)}
+                                      className="p-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-md transition-colors"
+                                      title="Remove Photo"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <div>
+                                  {idx !== 0 ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetAsCover(idx)}
+                                      className="w-full py-1 bg-white/95 hover:bg-white text-zinc-950 text-[10px] font-bold uppercase tracking-wider rounded transition-colors shadow-xs"
+                                    >
+                                      Make Cover
+                                    </button>
+                                  ) : (
+                                    <span className="block text-center text-[10px] text-white/80 font-bold uppercase tracking-wider py-0.5">
+                                      Main Cover
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Caption Footer */}
+                            <div className="p-1.5 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between text-[10px] text-zinc-500">
+                              <span className="font-mono truncate">{idx === 0 ? "Cover Photo" : `Angle #${idx + 1}`}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenStudioForExisting(idx)}
+                                className="text-[#8C7355] hover:text-[#705b42] font-bold uppercase text-[9px]"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    );
+                  })()}
 
-                      {/* Direct Image URL input */}
-                      <div>
-                        <label className="block text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1">
-                          Or Paste Image URL directly
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={editingProduct.image}
-                          onChange={(e) =>
-                            setEditingProduct({
-                              ...editingProduct,
-                              image: e.target.value,
-                              bannerImage: e.target.value,
-                            })
+                  {/* Add Image via Direct URL */}
+                  <div className="pt-1 border-t border-zinc-200">
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1">
+                      Quick Add via Image URL
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Paste image URL (e.g. https://... or /banners/...) and click Add"
+                        id="directFlaconUrlInput"
+                        className="flex-1 px-3 py-2 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const val = e.currentTarget.value.trim();
+                            if (val) {
+                              handleAddDirectUrl(val);
+                              e.currentTarget.value = "";
+                            }
                           }
-                          placeholder="https://... or /uploads/..."
-                          className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
-                        />
-                      </div>
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById("directFlaconUrlInput") as HTMLInputElement | null;
+                          if (input && input.value.trim()) {
+                            handleAddDirectUrl(input.value.trim());
+                            input.value = "";
+                          }
+                        }}
+                        className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shrink-0"
+                      >
+                        Add to Gallery
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2754,18 +2976,13 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                {/* Description */}
-                <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
-                    Description & Narrative
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={editingProduct.description}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
-                  />
-                </div>
+                {/* Description & Narrative Rich Studio Editor */}
+                <RichDescriptionEditor
+                  value={editingProduct.description}
+                  onChange={(val) => setEditingProduct({ ...editingProduct, description: val })}
+                  label="Perfume Description & Olfactory Narrative"
+                  placeholder="Describe the inspiration, opening notes, sillage, and luxurious flacon craftsmanship..."
+                />
 
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200">
@@ -3062,6 +3279,19 @@ export default function AdminDashboardClient({
           </>
         )}
       </AnimatePresence>
+
+      {/* Flacon Image Studio & Interactive Cropper Modal */}
+      <ImageStudioModal
+        isOpen={isStudioOpen}
+        onClose={() => setIsStudioOpen(false)}
+        initialImageUrl={studioInitialImage}
+        onImageSaved={handleStudioSave}
+        title={
+          studioTargetIndex === "new"
+            ? "Flacon Studio • New Photo Crop & Filter"
+            : `Flacon Studio • Photo #${typeof studioTargetIndex === "number" ? studioTargetIndex + 1 : 1}`
+        }
+      />
 
     </div>
   );
