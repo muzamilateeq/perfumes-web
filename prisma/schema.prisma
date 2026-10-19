@@ -41,17 +41,21 @@ enum Status {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  price       Decimal
-  stock       Int      @default(0)
-  images      String[] // array of URLs
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  orderItems  OrderItem[]
+  id             String      @id @default(cuid())
+  title          String
+  description    String
+  price          Decimal
+  stock          Int         @default(50)
+  batchNumber    String?     @default("BATCH-2026/01")
+  maturation     String?     @default("6 Months Cold Matured")
+  lowStockAlert  Int         @default(5)
+  images         String[]    // array of URLs
+  businessId     String
+  business       Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  orderItems     OrderItem[]
+  reviews        Review[]
 }
 
 model Order {
@@ -64,6 +68,8 @@ model Order {
   notes           String?
   paymentMethod   String      @default("COD") // "COD" or "BANK"
   total           Decimal
+  couponCode      String?
+  discountAmount  Decimal     @default(0)
   status          OrderStatus @default(PENDING)
   trackingNumber  String?
   userId          String?
@@ -90,3 +96,34 @@ model OrderItem {
   quantity  Int
   price     Decimal
 }
+
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discountType   String    @default("PERCENT") // "PERCENT" or "FIXED"
+  discountValue  Decimal
+  minOrderAmount Decimal   @default(0)
+  maxUses        Int?
+  usedCount      Int       @default(0)
+  isActive       Boolean   @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerName String
+  customerCity String?
+  rating       Int      @default(5)
+  comment      String
+  longevity    String?  @default("18+ Hours")
+  sillage      String?  @default("Strong & Radiating")
+  isVerified   Boolean  @default(true)
+  status       String   @default("APPROVED") // "PENDING", "APPROVED", "REJECTED"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+}
+

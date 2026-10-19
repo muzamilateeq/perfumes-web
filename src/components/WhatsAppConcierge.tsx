@@ -21,6 +21,7 @@ import {
   generateOrderTrackingWhatsAppMessage,
   type CartItemLike 
 } from "@/lib/whatsapp";
+import { useStore } from "@/context/StoreContext";
 
 interface WhatsAppConciergeProps {
   cart?: CartItemLike[];
@@ -28,15 +29,19 @@ interface WhatsAppConciergeProps {
 }
 
 export default function WhatsAppConcierge({ 
-  cart = [], 
-  totalCartAmount = 0 
+  cart, 
+  totalCartAmount 
 }: WhatsAppConciergeProps) {
+  const store = useStore();
+  const effectiveCart = (cart && cart.length > 0) ? cart : (store?.cart || []);
+  const effectiveTotal = (typeof totalCartAmount === "number" && totalCartAmount > 0) ? totalCartAmount : (store?.cartTotal || 0);
+
   const [isOpen, setIsOpen] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
   const [trackingId, setTrackingId] = useState("");
   const [showTrackingInput, setShowTrackingInput] = useState(false);
 
-  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const totalItems = effectiveCart.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleSendCustom = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,8 +53,8 @@ export default function WhatsAppConcierge({
   };
 
   const handleOrderCartOnWhatsApp = () => {
-    if (cart.length === 0) return;
-    const msg = generateCartWhatsAppMessage(cart, totalCartAmount);
+    if (effectiveCart.length === 0) return;
+    const msg = generateCartWhatsAppMessage(effectiveCart, effectiveTotal);
     window.open(buildWhatsAppUrl(msg), "_blank");
     setIsOpen(false);
   };
@@ -166,7 +171,7 @@ export default function WhatsAppConcierge({
                         </span>
                       </div>
                       <span className="text-xs font-bold font-serif text-emerald-100">
-                        PKR {totalCartAmount.toLocaleString()}
+                        PKR {effectiveTotal.toLocaleString()}
                       </span>
                     </div>
                     <p className="text-[11px] text-zinc-300 font-light mb-3">

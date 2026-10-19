@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Sparkles, 
@@ -42,19 +42,35 @@ import {
   User,
   MapPin,
   CreditCard,
-  LogOut
+  LogOut,
+  Tag,
+  Percent,
+  Upload,
+  Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { PerfumeItem, PERFUMES_DATA } from "@/lib/perfumes";
-import { StoreSettings, StoreOrder } from "@/lib/storeTypes";
+import { StoreSettings, StoreOrder, StoreCoupon, StoreReview } from "@/lib/storeTypes";
 import { 
   saveProductAction, 
   deleteProductAction, 
   saveSettingsAction, 
   updateOrderStatusAction,
+  updateProductStockAction,
   logoutAdminAction 
 } from "@/app/actions/admin";
+import {
+  getCouponsAction,
+  createCouponAction,
+  deleteCouponAction,
+  toggleCouponStatusAction,
+} from "@/app/actions/coupon";
+import {
+  getAdminReviewsAction,
+  updateReviewStatusAction,
+  deleteReviewAction,
+} from "@/app/actions/review";
 
 interface AdminDashboardClientProps {
   initialProducts: PerfumeItem[];
@@ -70,7 +86,7 @@ export default function AdminDashboardClient({
   const router = useRouter();
 
   // Navigation & Tabs
-  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "settings" | "content">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "coupons" | "reviews" | "settings" | "content">("overview");
 
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out of the Executive Portal?")) {
@@ -84,6 +100,27 @@ export default function AdminDashboardClient({
   const [settings, setSettings] = useState<StoreSettings>(initialSettings);
   const [orders, setOrders] = useState<StoreOrder[]>(initialOrders);
 
+  // Coupons State
+  const [coupons, setCoupons] = useState<StoreCoupon[]>([]);
+  const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+  const [newCoupon, setNewCoupon] = useState<{
+    code: string;
+    discountType: "PERCENT" | "FIXED";
+    discountValue: number;
+    minOrderAmount: number;
+    maxUses?: number;
+  }>({
+    code: "",
+    discountType: "PERCENT",
+    discountValue: 10,
+    minOrderAmount: 0,
+  });
+  const [isCreatingCoupon, setIsCreatingCoupon] = useState(false);
+
+  // Reviews State
+  const [adminReviews, setAdminReviews] = useState<any[]>([]);
+  const [reviewFilter, setReviewFilter] = useState<string>("All");
+
   // Notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -92,11 +129,175 @@ export default function AdminDashboardClient({
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Load Coupons & Reviews on Mount
+  useEffect(() => {
+    loadCoupons();
+    loadAdminReviews();
+  }, []);
+
+  const loadCoupons = async () => {
+    try {
+      const res = await getCouponsAction();
+      if (res.success && res.coupons) {
+        setCoupons(res.coupons as any);
+      }
+    } catch {}
+  };
+
+  const loadAdminReviews = async () => {
+    try {
+      const res = await getAdminReviewsAction();
+      if (res.success && res.reviews) {
+        setAdminReviews(res.reviews);
+      }
+    } catch {}
+  };
+
+  // Quick Stock Adjustment Handler
+  const handleQuickStockUpdate = async (productId: number, newStock: number) => {
+    try {
+      const res = await updateProductStockAction(productId, newStock);
+      if (res.success) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
+        );
+        showToast(res.message || "Stock updated successfully");
+      } else {
+        showToast(res.error || "Failed to update stock");
+      }
+    } catch {
+      showToast("Network error updating stock");
+    }
+  };
+
+  // Coupon Handlers
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCoupon.code.trim()) return;
+
+    setIsCreatingCoupon(true);
+    try {
+      const res = await createCouponAction(newCoupon);
+      if (res.success && res.coupon) {
+        setCoupons((prev) => [res.coupon!, ...prev]);
+        setIsCouponModalOpen(false);
+        setNewCoupon({
+          code: "",
+          discountType: "PERCENT",
+          discountValue: 10,
+          minOrderAmount: 0,
+        });
+        showToast(res.message || "Promo code created successfully");
+      } else {
+        showToast(res.error || "Failed to create coupon");
+      }
+    } catch {
+      showToast("Error creating coupon");
+    } finally {
+      setIsCreatingCoupon(false);
+    }
+  };
+
+  const handleToggleCoupon = async (id: string, currentStatus: boolean) => {
+    try {
+      const nextStatus = !currentStatus;
+      const res = await toggleCouponStatusAction(id, nextStatus);
+      if (res.success) {
+        setCoupons((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, isActive: nextStatus } : c))
+        );
+        showToast(res.message || "Coupon status updated");
+      }
+    } catch {
+      showToast("Error updating coupon");
+    }
+  };
+
+  const handleDeleteCoupon = async (id: string, code: string) => {
+    if (!window.confirm(`Delete promo code "${code}"?`)) return;
+    try {
+      const res = await deleteCouponAction(id);
+      if (res.success) {
+        setCoupons((prev) => prev.filter((c) => c.id !== id));
+        showToast(`Promo code "${code}" deleted`);
+      }
+    } catch {
+      showToast("Error deleting coupon");
+    }
+  };
+
+  // Review Handlers
+  const handleUpdateReviewStatus = async (id: string, status: "APPROVED" | "REJECTED") => {
+    try {
+      const res = await updateReviewStatusAction(id, status);
+      if (res.success) {
+        setAdminReviews((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, status } : r))
+        );
+        showToast(res.message || "Review status updated");
+      }
+    } catch {
+      showToast("Error updating review");
+    }
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    if (!window.confirm("Permanently delete this review?")) return;
+    try {
+      const res = await deleteReviewAction(id);
+      if (res.success) {
+        setAdminReviews((prev) => prev.filter((r) => r.id !== id));
+        showToast("Review deleted");
+      }
+    } catch {
+      showToast("Error deleting review");
+    }
+  };
+
   // Product Editing / Modal State
   const [editingProduct, setEditingProduct] = useState<PerfumeItem | null>(null);
   const [isAddMode, setIsAddMode] = useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
   const [productSearch, setProductSearch] = useState<string>("");
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>("All");
+
+  // Handle direct file upload for perfume image
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProduct) return;
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setEditingProduct((prev) =>
+          prev
+            ? {
+                ...prev,
+                image: data.url,
+                bannerImage: data.url,
+              }
+            : null
+        );
+        showToast("New perfume picture uploaded successfully!");
+      } else {
+        showToast(data.error || "Failed to upload image");
+      }
+    } catch {
+      showToast("Network error uploading image");
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
 
   // Orders State
   const [orderSearch, setOrderSearch] = useState<string>("");
@@ -274,7 +475,11 @@ export default function AdminDashboardClient({
     bestOccasion: "Evening Galas & Executive Boardrooms",
     season: "All Year Signature",
     gender: "Unisex Haute Luxury",
-    story: "Hand-poured into heavy crystal flacons with magnetic metal caps."
+    story: "Hand-poured into heavy crystal flacons with magnetic metal caps.",
+    stock: 25,
+    lowStockAlert: 5,
+    batchNumber: "AUR-B26/01",
+    maturation: "6 Months Cold Matured Extrait",
   });
 
   return (
@@ -363,7 +568,9 @@ export default function AdminDashboardClient({
             { id: "overview", label: "Executive Analytics", icon: TrendingUp },
             { id: "products", label: `Perfumes & Flacons (${products.length})`, icon: Layers },
             { id: "orders", label: `Client Orders (${orders.length})`, icon: Package, badge: pendingOrdersCount > 0 ? pendingOrdersCount : null },
-            { id: "content", label: "Story, Guarantee & Details CMS", icon: Sparkles },
+            { id: "coupons", label: `Promo & Coupons (${coupons.length})`, icon: Tag },
+            { id: "reviews", label: `Patron Reviews (${adminReviews.length})`, icon: Star },
+            { id: "content", label: "Story & Details CMS", icon: Sparkles },
             { id: "settings", label: "Store Controls & WhatsApp", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -775,6 +982,57 @@ export default function AdminDashboardClient({
                               <Edit3 className="w-3 h-3 text-zinc-400" />
                             </button>
                           )}
+                        </div>
+
+                        {/* Inventory Stock & Quick Restock Pill */}
+                        <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-200 space-y-2">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500">
+                              Stock Reserve:
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                              (p.stock ?? 25) <= (p.lowStockAlert ?? 5)
+                                ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            }`}>
+                              {(p.stock ?? 25) <= (p.lowStockAlert ?? 5) ? `⚠️ Only ${p.stock ?? 25} Left` : `${p.stock ?? 25} Flacons`}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-200/60">
+                            <span className="text-[9px] font-mono text-zinc-400">Quick Adjust:</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStockUpdate(p.id, Math.max(0, (p.stock ?? 25) - 1))}
+                                className="px-2 py-0.5 rounded bg-white hover:bg-zinc-200 border border-zinc-300 text-[10px] font-bold text-zinc-700 transition-colors"
+                                title="Deduct 1 flacon"
+                              >
+                                -1
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStockUpdate(p.id, (p.stock ?? 25) + 1)}
+                                className="px-2 py-0.5 rounded bg-white hover:bg-zinc-200 border border-zinc-300 text-[10px] font-bold text-zinc-700 transition-colors"
+                                title="Add 1 flacon"
+                              >
+                                +1
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickStockUpdate(p.id, (p.stock ?? 25) + 5)}
+                                className="px-2.5 py-0.5 rounded bg-zinc-950 hover:bg-zinc-800 text-white text-[10px] font-bold transition-colors"
+                                title="Restock +5 flacons"
+                              >
+                                +5
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] text-zinc-500 font-mono flex items-center justify-between pt-0.5 border-t border-zinc-200/40">
+                            <span>Batch: {p.batchNumber || "AUR-B26/01"}</span>
+                            <span className="truncate max-w-[140px] text-right">{p.maturation || "6 Mo. Extrait"}</span>
+                          </div>
                         </div>
 
                         <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
@@ -1553,6 +1811,386 @@ export default function AdminDashboardClient({
           </div>
         )}
 
+        {/* ============================================================== */}
+        {/* TAB 4: PROMO CODES & DISCOUNT COUPONS                          */}
+        {/* ============================================================== */}
+        {activeTab === "coupons" && (
+          <div className="space-y-6">
+            
+            {/* Action Bar & Stats Banner */}
+            <div className="p-5 sm:p-6 rounded-xl bg-white border border-zinc-200 shadow-xs flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#8C7355] block mb-1">
+                  VIP Concessions & Privilege Codes
+                </span>
+                <h3 className="font-serif text-2xl font-light text-zinc-950">
+                  Luxury Promo & Coupon Engine
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1 max-w-xl">
+                  Configure live promotional codes for checkout. Codes deduct automatically from cart subtotals and sync to orders.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCouponModalOpen(true)}
+                className="px-5 py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-2 shadow-sm shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Promo Code</span>
+              </button>
+            </div>
+
+            {/* 3 Metric Pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Total Coupons</span>
+                  <span className="font-serif text-2xl font-normal text-zinc-950">{coupons.length} Issued</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FAF7F2] text-[#8C7355] border border-[#EFECE6]">
+                  <Tag className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Active Status</span>
+                  <span className="font-serif text-2xl font-normal text-emerald-700">
+                    {coupons.filter(c => c.isActive).length} Live
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Redemptions</span>
+                  <span className="font-serif text-2xl font-normal text-zinc-950">
+                    {coupons.reduce((sum, c) => sum + (c.usedCount || 0), 0)} Orders
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FAF7F2] text-[#8C7355] border border-[#EFECE6]">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+
+            {/* Coupons Grid / Cards */}
+            {coupons.length === 0 ? (
+              <div className="py-16 text-center bg-white border border-zinc-200 rounded-xl p-8">
+                <Tag className="w-10 h-10 text-zinc-300 mx-auto mb-3" strokeWidth={1} />
+                <h4 className="font-serif text-lg font-light text-zinc-900 mb-1">No Promo Codes Created Yet</h4>
+                <p className="text-xs text-zinc-500 mb-4">Create your first client privilege code like WELCOME10 or EID2026.</p>
+                <button
+                  type="button"
+                  onClick={() => setIsCouponModalOpen(true)}
+                  className="px-4 py-2 rounded-lg bg-zinc-950 text-white text-xs font-bold tracking-wider uppercase hover:bg-zinc-800"
+                >
+                  Create Code
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {coupons.map((coupon) => (
+                  <div
+                    key={coupon.id}
+                    className={`p-5 rounded-xl bg-white border transition-all flex flex-col justify-between shadow-xs ${
+                      coupon.isActive ? "border-zinc-200 hover:border-zinc-400" : "border-zinc-200 opacity-60 bg-zinc-50/50"
+                    }`}
+                  >
+                    <div>
+                      {/* Top Bar: Code Tag + Status Switch */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded bg-[#FAF7F2] text-[#8C7355] font-mono font-bold text-xs tracking-widest uppercase border border-dashed border-[#C5A880]">
+                            {coupon.code}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(coupon.code);
+                              showToast(`Copied "${coupon.code}"`);
+                            }}
+                            className="p-1 text-zinc-400 hover:text-zinc-800 transition-colors"
+                            title="Copy code"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            coupon.isActive
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : "bg-zinc-100 text-zinc-500 border border-zinc-200"
+                          }`}
+                        >
+                          {coupon.isActive ? "Active" : "Disabled"}
+                        </span>
+                      </div>
+
+                      {/* Value Display */}
+                      <div className="mb-3">
+                        <div className="font-serif text-2xl font-normal text-zinc-950">
+                          {coupon.discountType === "PERCENT"
+                            ? `${coupon.discountValue}% OFF`
+                            : `PKR ${coupon.discountValue.toLocaleString()} OFF`}
+                        </div>
+                        <p className="text-[11px] text-zinc-500 mt-0.5 font-light">
+                          {coupon.minOrderAmount > 0
+                            ? `Requires min. order of PKR ${coupon.minOrderAmount.toLocaleString()}`
+                            : "No minimum spend required"}
+                        </p>
+                      </div>
+
+                      {/* Usage & Rules */}
+                      <div className="p-3 rounded-lg bg-zinc-50 border border-zinc-100 text-xs text-zinc-600 space-y-1 font-mono text-[11px]">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-400">Total Redeemed:</span>
+                          <span className="font-bold text-zinc-900">
+                            {coupon.usedCount} {coupon.maxUses ? `/ ${coupon.maxUses}` : ""} times
+                          </span>
+                        </div>
+                        {coupon.maxUses && (
+                          <div className="flex justify-between">
+                            <span className="text-zinc-400">Limit:</span>
+                            <span className="text-zinc-900">{coupon.maxUses} uses total</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions Footer */}
+                    <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCoupon(coupon.id, coupon.isActive)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-colors border ${
+                          coupon.isActive
+                            ? "border-amber-200 text-amber-800 hover:bg-amber-50"
+                            : "border-emerald-200 text-emerald-800 hover:bg-emerald-50"
+                        }`}
+                      >
+                        {coupon.isActive ? "Deactivate" : "Activate"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCoupon(coupon.id, coupon.code)}
+                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete promo code"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 5: PATRON REVIEWS & LONGEVITY RATINGS MODERATION           */}
+        {/* ============================================================== */}
+        {activeTab === "reviews" && (
+          <div className="space-y-6">
+            
+            {/* Header Strip */}
+            <div className="p-5 sm:p-6 rounded-xl bg-white border border-zinc-200 shadow-xs flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#8C7355] block mb-1">
+                  Patron Consensus & Scent Longevity
+                </span>
+                <h3 className="font-serif text-2xl font-light text-zinc-950">
+                  Verified Collector Reviews & Longevity Ratings
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1 max-w-xl">
+                  Inspect client submissions, verify skin longevity reports (18h+), and approve authentic feedback for live perfume pages.
+                </p>
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex items-center gap-1.5 p-1 rounded-lg bg-zinc-100 border border-zinc-200">
+                {["All", "PENDING", "APPROVED", "REJECTED"].map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setReviewFilter(st)}
+                    className={`px-3 py-1.5 rounded-md text-[10px] font-bold tracking-widest uppercase transition-all ${
+                      reviewFilter === st
+                        ? "bg-white text-zinc-950 shadow-xs font-bold"
+                        : "text-zinc-500 hover:text-zinc-900"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Metrics Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Total Reviews</span>
+                <span className="font-serif text-2xl font-normal text-zinc-950">{adminReviews.length}</span>
+              </div>
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Published Live</span>
+                <span className="font-serif text-2xl font-normal text-emerald-700">
+                  {adminReviews.filter((r) => r.status === "APPROVED").length} Approved
+                </span>
+              </div>
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Pending Review</span>
+                <span className="font-serif text-2xl font-normal text-amber-700">
+                  {adminReviews.filter((r) => r.status === "PENDING").length} Waiting
+                </span>
+              </div>
+              <div className="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 block">Avg. Longevity</span>
+                <span className="font-serif text-2xl font-normal text-[#8C7355]">18–20+ Hours</span>
+              </div>
+            </div>
+
+            {/* Reviews List */}
+            {(() => {
+              const displayed = adminReviews.filter((r) =>
+                reviewFilter === "All" ? true : r.status === reviewFilter
+              );
+
+              if (displayed.length === 0) {
+                return (
+                  <div className="py-16 text-center bg-white border border-zinc-200 rounded-xl p-8">
+                    <Star className="w-10 h-10 text-zinc-300 mx-auto mb-3" strokeWidth={1} />
+                    <h4 className="font-serif text-lg font-light text-zinc-900 mb-1">
+                      No Reviews in &ldquo;{reviewFilter}&rdquo;
+                    </h4>
+                    <p className="text-xs text-zinc-500">
+                      When patrons leave reviews on perfume detail pages, they will appear here.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {displayed.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-5 rounded-xl bg-white border border-zinc-200 hover:border-zinc-300 transition-all shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-sm text-zinc-950">{rev.userName}</span>
+                          {rev.userCity && (
+                            <span className="text-xs text-zinc-400 font-normal">• {rev.userCity}</span>
+                          )}
+                          <span className="px-2 py-0.5 rounded bg-[#FAF7F2] text-[#8C7355] text-[10px] font-bold uppercase tracking-wider border border-[#E8E2D8]">
+                            Verified Patron
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              rev.status === "APPROVED"
+                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                : rev.status === "PENDING"
+                                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                                : "bg-red-50 text-red-800 border border-red-200"
+                            }`}
+                          >
+                            {rev.status}
+                          </span>
+                          <span className="text-xs text-zinc-400 ml-auto md:ml-0 font-mono">
+                            {new Date(rev.createdAt).toLocaleDateString("en-PK", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+
+                        {/* Product Tag & Longevity */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span className="font-serif font-bold text-zinc-800">
+                            Flacon: {rev.product?.name || "Bespoke Perfume"}
+                          </span>
+                          <span>•</span>
+                          <div className="flex items-center text-amber-500">
+                            {[1, 2, 3, 4, 5].map((st) => (
+                              <Star
+                                key={st}
+                                className={`w-3.5 h-3.5 ${
+                                  st <= rev.rating ? "fill-amber-400 text-amber-400" : "text-zinc-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span>•</span>
+                          <span className="text-[11px] font-mono text-zinc-600 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded">
+                            Longevity: <strong>{rev.longevityHours || "18+ Hours"}</strong>
+                          </span>
+                          <span className="text-[11px] font-mono text-zinc-600 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded">
+                            Sillage: <strong>{rev.sillageRating || "Commanding"}</strong>
+                          </span>
+                        </div>
+
+                        {/* Title & Comment */}
+                        <div className="pt-1">
+                          {rev.title && (
+                            <h5 className="font-serif text-sm font-semibold text-zinc-950 mb-0.5">
+                              &ldquo;{rev.title}&rdquo;
+                            </h5>
+                          )}
+                          <p className="text-xs text-zinc-600 leading-relaxed font-light">
+                            {rev.comment}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Moderation Actions */}
+                      <div className="flex items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-100">
+                        {rev.status !== "APPROVED" && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateReviewStatus(rev.id, "APPROVED")}
+                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 shadow-xs"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Approve</span>
+                          </button>
+                        )}
+                        {rev.status !== "REJECTED" && (
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateReviewStatus(rev.id, "REJECTED")}
+                            className="px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 border border-zinc-200"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Reject</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReview(rev.id)}
+                          className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+          </div>
+        )}
+
       </main>
 
       {/* ============================================================== */}
@@ -1625,36 +2263,151 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                {/* Image URL & Category */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
-                      Flacon Image URL
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editingProduct.image}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none font-mono"
-                    />
+                {/* Dynamic Image Upload & Picture Management */}
+                <div className="p-4 sm:p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C7355] block">
+                        Flacon Visual Presentation
+                      </span>
+                      <h4 className="font-serif text-base font-medium text-zinc-950">
+                        Perfume Picture (Dynamic Upload & Live Sync)
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded">
+                      JPG, PNG, WEBP
+                    </span>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
-                      Fragrance Family (Category)
-                    </label>
-                    <select
-                      value={editingProduct.category}
-                      onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
-                    >
-                      <option>Woody & Amber</option>
-                      <option>Floral & Rose</option>
-                      <option>Fresh & Citrus</option>
-                      <option>Warm Gourmand</option>
-                    </select>
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    {/* Live Thumbnail Preview */}
+                    <div className="relative w-28 h-32 rounded-lg bg-zinc-200 border border-zinc-300 overflow-hidden shrink-0 shadow-xs">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={editingProduct.image || "/banners/oud-royale.png"}
+                        alt={editingProduct.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-1 inset-x-1 text-center bg-zinc-950/85 text-white text-[8px] font-bold uppercase tracking-wider py-0.5 rounded-xs">
+                        Live Preview
+                      </span>
+                    </div>
+
+                    {/* Upload Controls & URL */}
+                    <div className="flex-1 space-y-3 w-full">
+                      {/* Direct Device Upload Button */}
+                      <div>
+                        <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase cursor-pointer transition-colors shadow-xs">
+                          {isUploadingImage ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#C5A880]" />
+                          ) : (
+                            <Upload className="w-3.5 h-3.5 text-[#C5A880]" />
+                          )}
+                          <span>
+                            {isUploadingImage ? "Uploading New Picture..." : "Upload New Picture from Device"}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            disabled={isUploadingImage}
+                            onChange={handleImageFileUpload}
+                            className="hidden"
+                          />
+                        </label>
+                        <p className="text-[11px] text-zinc-500 mt-1">
+                          Click to select any perfume photo from your phone or laptop. It will dynamically save and reflect across the website!
+                        </p>
+                      </div>
+
+                      {/* Direct Image URL input */}
+                      <div>
+                        <label className="block text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1">
+                          Or Paste Image URL directly
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editingProduct.image}
+                          onChange={(e) =>
+                            setEditingProduct({
+                              ...editingProduct,
+                              image: e.target.value,
+                              bannerImage: e.target.value,
+                            })
+                          }
+                          placeholder="https://... or /uploads/..."
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fragrance Family (Category) */}
+                <div>
+                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                    Fragrance Family (Category)
+                  </label>
+                  <select
+                    value={editingProduct.category}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                  >
+                    <option>Woody & Oud</option>
+                    <option>Woody & Amber</option>
+                    <option>Floral & Rose</option>
+                    <option>Fresh & Citrus</option>
+                    <option>Warm Gourmand</option>
+                  </select>
+                </div>
+
+                {/* Inventory Stock & Artisanal Batch Specifications */}
+                <div className="p-4 rounded-lg bg-zinc-50 border border-zinc-200 space-y-3">
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block">
+                    Inventory Reserve & Batch Details
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">Stock Reserve *</label>
+                      <input
+                        type="number"
+                        min={0}
+                        required
+                        value={editingProduct.stock ?? 25}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value, 10) || 0 })}
+                        className="w-full px-3 py-2 rounded bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">Low Stock Alert</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={editingProduct.lowStockAlert ?? 5}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, lowStockAlert: parseInt(e.target.value, 10) || 5 })}
+                        className="w-full px-3 py-2 rounded bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">Batch Code</label>
+                      <input
+                        type="text"
+                        value={editingProduct.batchNumber || ""}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, batchNumber: e.target.value })}
+                        placeholder="e.g. AUR-B26/01"
+                        className="w-full px-3 py-2 rounded bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-zinc-600 mb-1">Maturation Spec</label>
+                      <input
+                        type="text"
+                        value={editingProduct.maturation || ""}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, maturation: e.target.value })}
+                        placeholder="e.g. 6 Mo. Extrait"
+                        className="w-full px-3 py-2 rounded bg-white border border-zinc-200 text-xs text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -1837,6 +2590,168 @@ export default function AdminDashboardClient({
                   <span>Print Slip</span>
                 </button>
               </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ============================================================== */}
+      {/* MODAL 3: CREATE LUXURY PROMO CODE MODAL                        */}
+      {/* ============================================================== */}
+      <AnimatePresence>
+        {isCouponModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCouponModalOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="fixed inset-4 sm:inset-6 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[540px] max-h-[90vh] overflow-y-auto bg-white border border-zinc-200 rounded-xl z-50 shadow-2xl p-6 sm:p-8"
+            >
+              <div className="flex justify-between items-center pb-4 border-b border-zinc-200 mb-6">
+                <div>
+                  <h3 className="font-serif text-2xl font-light text-zinc-950">
+                    Create Luxury Promo Code
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Issue a privilege discount code for client checkout
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCouponModalOpen(false)}
+                  className="p-2 hover:bg-zinc-100 rounded-lg text-zinc-500 hover:text-zinc-900 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCoupon} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                    Promo Code (Uppercase, No Spaces) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. VIP20 or EID1000"
+                    value={newCoupon.code}
+                    onChange={(e) =>
+                      setNewCoupon({
+                        ...newCoupon,
+                        code: e.target.value.toUpperCase().replace(/\s+/g, ""),
+                      })
+                    }
+                    className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-sm font-mono tracking-wider font-bold text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      Discount Type *
+                    </label>
+                    <select
+                      value={newCoupon.discountType}
+                      onChange={(e) =>
+                        setNewCoupon({
+                          ...newCoupon,
+                          discountType: e.target.value as "PERCENT" | "FIXED",
+                        })
+                      }
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                    >
+                      <option value="PERCENT">Percentage (% Off)</option>
+                      <option value="FIXED">Flat PKR (PKR Off)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      {newCoupon.discountType === "PERCENT" ? "Discount Percentage (%)" : "Flat Amount (PKR)"} *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      max={newCoupon.discountType === "PERCENT" ? 100 : undefined}
+                      value={newCoupon.discountValue || ""}
+                      onChange={(e) =>
+                        setNewCoupon({
+                          ...newCoupon,
+                          discountValue: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      placeholder={newCoupon.discountType === "PERCENT" ? "15" : "1000"}
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-sm font-mono text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      Min. Order Spend (PKR)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={newCoupon.minOrderAmount || ""}
+                      onChange={(e) =>
+                        setNewCoupon({
+                          ...newCoupon,
+                          minOrderAmount: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      placeholder="0 (Any order)"
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-mono text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      Max Redemptions Cap
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={newCoupon.maxUses || ""}
+                      onChange={(e) =>
+                        setNewCoupon({
+                          ...newCoupon,
+                          maxUses: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                        })
+                      }
+                      placeholder="Optional (e.g. 50)"
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-mono text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200">
+                  <button
+                    type="button"
+                    onClick={() => setIsCouponModalOpen(false)}
+                    className="px-5 py-2.5 rounded-lg border border-zinc-200 text-zinc-600 hover:text-zinc-950 text-xs font-bold tracking-wider uppercase transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreatingCoupon}
+                    className="px-6 py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-all shadow-sm disabled:opacity-50"
+                  >
+                    {isCreatingCoupon ? "Creating..." : "Issue Promo Code"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </>
         )}

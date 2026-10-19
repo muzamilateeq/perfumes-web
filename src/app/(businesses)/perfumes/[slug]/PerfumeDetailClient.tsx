@@ -34,6 +34,8 @@ import {
 } from "@/lib/whatsapp";
 import { createOrderAction } from "@/app/actions/order";
 import { StoreSettings } from "@/lib/storeTypes";
+import PerfumeReviewsSection from "@/components/PerfumeReviewsSection";
+import { useStore } from "@/context/StoreContext";
 
 interface PerfumeDetailClientProps {
   perfume: PerfumeItem;
@@ -42,11 +44,20 @@ interface PerfumeDetailClientProps {
 }
 
 export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings }: PerfumeDetailClientProps) {
+  const store = useStore();
   const [quantity, setQuantity] = useState<number>(1);
   const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"pyramid" | "story" | "guarantee">("pyramid");
   
+  const handleAddToBag = () => {
+    store.addToCart(perfume, quantity);
+    if (includeGiftBox) {
+      store.setIncludeGiftBox(true);
+    }
+    store.openCart();
+  };
+
   // Checkout Form State
   const [checkoutData, setCheckoutData] = useState({
     name: "",
@@ -105,7 +116,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white">
       
       {/* Site Header */}
-      <SiteHeader cartCount={0} />
+      <SiteHeader cartCount={store.cartCount} onOpenCart={store.openCart} />
 
       {/* Breadcrumb Navigation */}
       <nav className="border-b border-zinc-200 bg-white/60 py-3 px-4 sm:px-6">
@@ -197,13 +208,31 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
               </h1>
 
               {/* Price Banner */}
-              <div className="flex items-baseline gap-3 sm:gap-4 mb-4">
+              <div className="flex items-baseline gap-3 sm:gap-4 mb-3">
                 <span className="font-serif text-2xl sm:text-3xl font-normal text-zinc-950">
                   {perfume.price}
                 </span>
                 <span className="text-[10px] sm:text-xs text-emerald-800 font-bold uppercase tracking-wider bg-emerald-50 px-2.5 py-1 border border-emerald-200">
                   Free Nationwide Courier
                 </span>
+              </div>
+
+              {/* Low Stock Alert Notice */}
+              {perfume.stock !== undefined && perfume.stock <= 5 && (
+                <div className="flex items-center gap-2.5 px-3.5 py-2 bg-amber-50/90 border border-amber-300 text-amber-950 rounded-xs text-xs mb-3.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping shrink-0" />
+                  <span className="font-bold tracking-wider uppercase text-[10px] text-amber-900">Low Stock Alert:</span>
+                  <span className="font-medium text-amber-900">Only {perfume.stock} flacons remaining from {perfume.batchNumber || "Batch 2026/01"}</span>
+                </div>
+              )}
+
+              {/* Artisanal Batch & Maturation Specs */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-zinc-500 font-mono mb-4 pb-3 border-b border-zinc-200">
+                <span>Batch: <strong className="text-zinc-900">{perfume.batchNumber || "AUR-B26/01"}</strong></span>
+                <span>•</span>
+                <span>Maturation: <strong className="text-zinc-900">{perfume.maturation || "6 Months Cold Matured Extrait"}</strong></span>
+                <span>•</span>
+                <span>Stock: <strong className="text-emerald-700">{perfume.stock !== undefined ? `${perfume.stock} Units` : "In Stock"}</strong></span>
               </div>
 
               <p className="text-xs sm:text-sm text-zinc-600 font-light leading-relaxed">
@@ -289,22 +318,34 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
               {/* Primary Action Buttons */}
               <div className="space-y-2.5 sm:space-y-3 pt-1 sm:pt-2">
                 <button
-                  onClick={() => setIsCheckoutOpen(true)}
+                  type="button"
+                  onClick={handleAddToBag}
                   className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-all flex items-center justify-center gap-2.5 shadow-xl"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Order with Cash on Delivery (PKR {totalPrice.toLocaleString()})</span>
+                  <span>Add To Shopping Bag • PKR {totalPrice.toLocaleString()}</span>
                 </button>
 
-                <a 
-                  href={whatsappOrderUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-3 sm:py-4 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase transition-all flex items-center justify-center gap-2.5 shadow-md"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Order via WhatsApp ({WHATSAPP_CONFIG.displayNumber})</span>
-                </a>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsCheckoutOpen(true)}
+                    className="w-full py-3 sm:py-3.5 border border-zinc-950 text-zinc-950 hover:bg-zinc-950 hover:text-white text-xs font-bold tracking-[0.16em] uppercase transition-all flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Quick COD Order</span>
+                  </button>
+
+                  <a 
+                    href={whatsappOrderUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-3 sm:py-3.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.16em] uppercase transition-all flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Order on WhatsApp</span>
+                  </a>
+                </div>
               </div>
 
               <p className="text-[11px] text-zinc-400 text-center tracking-wider pt-1">
@@ -425,6 +466,9 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
             </div>
           </div>
         </section>
+
+        {/* Verified Customer Reviews & Olfactory Longevity Section */}
+        <PerfumeReviewsSection productId={perfume.id} productName={perfume.name} />
 
         {/* Discovery Box Cross-Sell */}
         <section className="mt-16 p-8 sm:p-10 bg-[#FAF7F2] border border-[#EBE4D8] flex flex-col md:flex-row items-center justify-between gap-6">
@@ -554,21 +598,31 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
                     Thank you, {checkoutData.name}. Your order for {quantity}x {perfume.name} has been placed. 
                     Our concierge will dispatch your sealed package with the complimentary matching 2ml tester.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center items-center">
                     <a
                       href={buildWhatsAppUrl(generateConfirmedOrderWhatsAppMessage(orderId, checkoutData, [{ product: perfume, quantity }], totalPrice))}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg"
+                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg w-full sm:w-auto"
                     >
                       <MessageCircle className="w-4 h-4" /> Send Receipt to WhatsApp
                     </a>
+                    <Link
+                      href={`/track-order?q=${orderId}`}
+                      onClick={() => {
+                        setOrderSuccess(false);
+                        setIsCheckoutOpen(false);
+                      }}
+                      className="px-6 py-3.5 border border-zinc-950 text-zinc-950 text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-zinc-950 hover:text-white transition-colors inline-flex items-center justify-center w-full sm:w-auto"
+                    >
+                      Track Order Status →
+                    </Link>
                     <button 
                       onClick={() => {
                         setOrderSuccess(false);
                         setIsCheckoutOpen(false);
                       }}
-                      className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors"
+                      className="px-5 py-3.5 bg-zinc-100 text-zinc-700 text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-zinc-200 transition-colors w-full sm:w-auto"
                     >
                       Close
                     </button>

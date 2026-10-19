@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
+import GlobalCartDrawer from "@/components/GlobalCartDrawer";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -27,6 +28,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "Aura Fragrances — Artisanal Haute Parfumerie | Luxury Extrait de Parfum",
   description: "Official online boutique for Aura Fragrances. Artisanal, long-lasting Extrait de Parfum with 30%+ pure perfume oil concentration. Cash on Delivery nationwide.",
 };
@@ -42,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StoreProvider>
           {children}
           <WishlistDrawer />
+          <GlobalCartDrawer />
         </StoreProvider>
       </body>
     </html>

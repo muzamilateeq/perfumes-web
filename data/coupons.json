@@ -1,0 +1,42 @@
+[
+  {
+    "id": "cpn-welcome10",
+    "code": "WELCOME10",
+    "discountType": "PERCENT",
+    "discountValue": 10,
+    "minOrderAmount": 0,
+    "maxUses": 500,
+    "usedCount": 14,
+    "isActive": true
+  },
+  {
+    "id": "cpn-aura1000",
+    "code": "AURA1000",
+    "discountType": "FIXED",
+    "discountValue": 1000,
+    "minOrderAmount": 6000,
+    "maxUses": 200,
+    "usedCount": 28,
+    "isActive": true
+  },
+  {
+    "id": "cpn-royalvip",
+    "code": "ROYALVIP",
+    "discountType": "PERCENT",
+    "discountValue": 15,
+    "minOrderAmount": 10000,
+    "maxUses": 100,
+    "usedCount": 7,
+    "isActive": true
+  },
+  {
+    "id": "cpn-eid2026",
+    "code": "EID2026",
+    "discountType": "FIXED",
+    "discountValue": 1500,
+    "minOrderAmount": 8000,
+    "maxUses": 150,
+    "usedCount": 0,
+    "isActive": true
+  }
+]

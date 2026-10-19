@@ -49,6 +49,8 @@ export interface StoreOrder {
   paymentMethod: string;
   notes?: string;
   total: number;
+  couponCode?: string;
+  discountAmount?: number;
   status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   items: {
     productId?: number | string;
@@ -56,6 +58,32 @@ export interface StoreOrder {
     price: number;
     quantity: number;
   }[];
+  createdAt: string;
+}
+
+export interface StoreCoupon {
+  id: string;
+  code: string;
+  discountType: "PERCENT" | "FIXED";
+  discountValue: number;
+  minOrderAmount: number;
+  maxUses?: number | null;
+  usedCount: number;
+  isActive: boolean;
+  expiresAt?: string | null;
+}
+
+export interface StoreReview {
+  id: string;
+  productId: string | number;
+  customerName: string;
+  customerCity?: string | null;
+  rating: number;
+  comment: string;
+  longevity?: string | null;
+  sillage?: string | null;
+  isVerified: boolean;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
 }
 

@@ -21,6 +21,10 @@ export interface PerfumeItem {
   season: string;
   gender: string;
   story: string;
+  stock?: number;
+  batchNumber?: string;
+  maturation?: string;
+  lowStockAlert?: number;
 }
 
 export const PERFUMES_DATA: PerfumeItem[] = [

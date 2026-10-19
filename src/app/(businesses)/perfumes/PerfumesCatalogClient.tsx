@@ -27,17 +27,10 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import WhatsAppConcierge from "@/components/WhatsAppConcierge";
 import { PerfumeItem, DISCOVERY_SET_ITEM } from "@/lib/perfumes";
-import { buildWhatsAppUrl, generateConfirmedOrderWhatsAppMessage } from "@/lib/whatsapp";
-import { createOrderAction } from "@/app/actions/order";
 import { useStore } from "@/context/StoreContext";
 
 interface PerfumesCatalogClientProps {
   initialProducts: PerfumeItem[];
-}
-
-interface CartItem {
-  product: PerfumeItem;
-  quantity: number;
 }
 
 const SCENT_FAMILIES = [
@@ -70,24 +63,6 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
   const wishlist = store.wishlist;
   const [quickViewProduct, setQuickViewProduct] = useState<PerfumeItem | null>(null);
 
-  // Cart State
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
-
-  // Fast Checkout Modal State
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
-  const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
-  const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
-  const [orderId, setOrderId] = useState<string>("");
-  const [checkoutData, setCheckoutData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    city: "Karachi",
-    paymentMethod: "COD"
-  });
-
   // Toggle Wishlist
   const toggleWishlist = (e: React.MouseEvent, productId: number) => {
     e.preventDefault();
@@ -97,34 +72,9 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
 
   // Cart Helpers
   const addToCart = (product: PerfumeItem) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
+    store.addToCart(product);
+    store.openCart();
   };
-
-  const updateQuantity = (productId: number, delta: number) => {
-    setCart(prev => {
-      return prev
-        .map(item => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[];
-    });
-  };
-
-  const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalCartAmount = cart.reduce((acc, item) => acc + (item.product.priceNum * item.quantity), 0);
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
@@ -171,53 +121,12 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
 
   const hasActiveFilters = selectedFamily !== "All Fragrances" || selectedSeason !== "All Seasons" || searchQuery !== "" || sortBy !== "featured";
 
-  // Checkout Submission
-  const handleCheckoutSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmittingOrder(true);
-    try {
-      const orderItems = cart.map(item => ({
-        productId: item.product.id,
-        name: item.product.name,
-        price: item.product.priceNum,
-        quantity: item.quantity
-      }));
 
-      const res = await createOrderAction({
-        customerName: checkoutData.name,
-        customerPhone: checkoutData.phone,
-        customerAddress: checkoutData.address,
-        customerCity: checkoutData.city,
-        paymentMethod: checkoutData.paymentMethod,
-        notes: includeGiftBox ? "Gift Box Requested with Golden Seal" : undefined,
-        items: orderItems,
-        total: totalCartAmount
-      });
-
-      if (res?.success) {
-        setOrderId(res.orderNumber);
-        setOrderSuccess(true);
-        setCart([]);
-      } else {
-        const generatedId = "AUR-" + Math.floor(100000 + Math.random() * 900000);
-        setOrderId(generatedId);
-        setOrderSuccess(true);
-        setCart([]);
-      }
-    } catch {
-      const generatedId = "AUR-" + Math.floor(100000 + Math.random() * 900000);
-      setOrderId(generatedId);
-      setOrderSuccess(true);
-      setCart([]);
-    } finally {
-      setIsSubmittingOrder(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white flex flex-col justify-between">
       {/* Header */}
-      <SiteHeader cartCount={totalCartCount} onOpenCart={() => setIsCartOpen(true)} />
+      <SiteHeader cartCount={store.cartCount} onOpenCart={store.openCart} />
 
       <main className="flex-1">
         {/* 1. EDITORIAL HERO BANNER */}
@@ -388,11 +297,19 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
                         </Link>
 
                         {/* Top Badges */}
-                        {product.badge && (
-                          <span className="absolute top-3 left-3 bg-zinc-950 text-white px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase shadow-sm pointer-events-none">
-                            {product.badge}
-                          </span>
-                        )}
+                        <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none z-10">
+                          {product.badge && (
+                            <span className="bg-zinc-950 text-white px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase shadow-sm">
+                              {product.badge}
+                            </span>
+                          )}
+                          {typeof product.stock === "number" && product.stock <= (product.lowStockAlert || 5) && (
+                            <span className="bg-amber-600/95 text-white px-2 py-0.5 text-[8.5px] font-bold tracking-wider uppercase shadow-sm flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-300 animate-ping" />
+                              Only {product.stock} Left
+                            </span>
+                          )}
+                        </div>
 
                         {/* Wishlist Heart Button */}
                         <button
@@ -441,7 +358,7 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
                         </p>
 
                         {/* Concentration & Longevity Pill Bar */}
-                        <div className="flex items-center gap-2 mb-4 text-[10px] font-mono text-zinc-600 bg-zinc-50 border border-zinc-100 p-2">
+                        <div className="flex items-center gap-2 mb-3 text-[10px] font-mono text-zinc-600 bg-zinc-50 border border-zinc-100 p-2">
                           <span className="flex items-center gap-1 font-semibold text-zinc-900">
                             <Droplets className="w-3 h-3 text-[#C5A880]" /> {product.concentration.split(" ")[0]}
                           </span>
@@ -450,6 +367,14 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
                             <Clock className="w-3 h-3 text-zinc-400" /> {product.longevity}
                           </span>
                         </div>
+
+                        {/* Low Stock Alert Notice */}
+                        {typeof product.stock === "number" && product.stock <= (product.lowStockAlert || 5) && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-amber-900 font-semibold mb-3 bg-amber-50 border border-amber-200 px-2.5 py-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                            <span>Reserve Alert: Only {product.stock} flacons left in batch</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -622,285 +547,6 @@ export default function PerfumesCatalogClient({ initialProducts }: PerfumesCatal
         )}
       </AnimatePresence>
 
-      {/* SLIDE-OVER SHOPPING BAG */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCartOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full sm:max-w-md h-full bg-white z-50 shadow-2xl flex flex-col justify-between"
-            >
-              {/* Header */}
-              <div className="p-4 sm:p-6 border-b border-zinc-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-950" />
-                  <span className="text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase text-zinc-950">
-                    Your Shopping Bag ({totalCartCount})
-                  </span>
-                </div>
-                <button
-                  onClick={() => setIsCartOpen(false)}
-                  className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5 text-zinc-600" />
-                </button>
-              </div>
-
-              {/* Free Shipping Badge */}
-              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#FAF7F2] border-b border-[#EBE4D8] flex items-center gap-2 text-xs font-semibold text-[#7A6448]">
-                <Sparkles className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
-                <span>Complimentary Express Nationwide Delivery Unlocked!</span>
-              </div>
-
-              {/* Cart Items List */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-                {cart.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center py-16">
-                    <ShoppingBag className="w-10 h-10 text-zinc-300 mb-3" strokeWidth={1} />
-                    <p className="text-sm font-light text-zinc-600 mb-1">Your bag is currently empty.</p>
-                    <p className="text-xs text-zinc-400 max-w-xs mb-6">Select from our signature flacons or order the Discovery Coffret.</p>
-                    <button
-                      onClick={() => setIsCartOpen(false)}
-                      className="px-6 py-2.5 bg-zinc-950 text-white text-xs font-bold tracking-widest uppercase hover:bg-zinc-800 transition-colors"
-                    >
-                      Browse Flacons
-                    </button>
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.product.id} className="flex gap-3.5 pb-4 border-b border-zinc-100">
-                      <div className="w-16 h-20 bg-zinc-100 shrink-0 border border-zinc-200 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-serif text-sm font-medium text-zinc-950">{item.product.name}</h4>
-                            <span className="text-xs font-bold text-zinc-900 shrink-0">{item.product.price}</span>
-                          </div>
-                          <p className="text-[10px] text-zinc-400 tracking-wider uppercase mt-0.5">{item.product.volume}</p>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="flex items-center border border-zinc-200">
-                            <button
-                              onClick={() => updateQuantity(item.product.id, -1)}
-                              className="px-2 py-1 text-zinc-600 hover:bg-zinc-100 transition-colors"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="px-2.5 text-xs font-medium text-zinc-900">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.product.id, 1)}
-                              className="px-2 py-1 text-zinc-600 hover:bg-zinc-100 transition-colors"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-
-                          <button
-                            onClick={() => updateQuantity(item.product.id, -item.quantity)}
-                            className="text-[10px] font-bold text-zinc-400 hover:text-red-600 transition-colors uppercase tracking-wider"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Cart Footer */}
-              {cart.length > 0 && (
-                <div className="p-4 sm:p-6 border-t border-zinc-200 bg-zinc-50 space-y-4">
-                  {/* Wax Seal Gift Box Add-On */}
-                  <label className="flex items-center gap-2.5 cursor-pointer text-xs text-zinc-700">
-                    <input
-                      type="checkbox"
-                      checked={includeGiftBox}
-                      onChange={(e) => setIncludeGiftBox(e.target.checked)}
-                      className="w-4 h-4 text-zinc-950 rounded border-zinc-300 focus:ring-0"
-                    />
-                    <span>Add Complimentary Luxury Gift Box & Golden Wax Seal</span>
-                  </label>
-
-                  {/* Summary */}
-                  <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-zinc-500">
-                      <span>Delivery</span>
-                      <span className="text-emerald-700 font-bold uppercase">Free (COD Nationwide)</span>
-                    </div>
-                    <div className="flex justify-between text-zinc-500">
-                      <span>Tester Vials Included</span>
-                      <span className="text-zinc-900 font-medium">Free 2ml With Every Bottle</span>
-                    </div>
-                    <div className="flex justify-between text-sm sm:text-base font-semibold text-zinc-950 pt-2 border-t border-zinc-200">
-                      <span>Total Amount</span>
-                      <span className="font-serif text-base sm:text-lg">PKR {totalCartAmount.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      setIsCheckoutOpen(true);
-                    }}
-                    className="w-full py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors shadow-lg"
-                  >
-                    Proceed To Cash On Delivery (PKR {totalCartAmount.toLocaleString()})
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* FAST CHECKOUT MODAL */}
-      <AnimatePresence>
-        {isCheckoutOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCheckoutOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 w-full max-w-lg bg-white border border-zinc-200 shadow-2xl p-6 sm:p-8"
-            >
-              <button
-                onClick={() => setIsCheckoutOpen(false)}
-                className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-950"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              {orderSuccess ? (
-                <div className="text-center py-6">
-                  <div className="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
-                    Order Confirmed
-                  </span>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950 mb-2">
-                    Thank You for Your Order
-                  </h3>
-                  <p className="text-xs text-zinc-600 mb-4">
-                    Your order reference is <strong>{orderId}</strong>. We are hand-preparing your parcel for express dispatch.
-                  </p>
-
-                  <div className="p-4 bg-zinc-50 border border-zinc-200 text-xs text-left mb-6 space-y-1">
-                    <p><strong>Payment:</strong> Cash on Delivery (COD)</p>
-                    <p><strong>Tracking:</strong> Real-time SMS tracking updates will be sent to your phone.</p>
-                  </div>
-
-                  <a
-                    href={buildWhatsAppUrl(
-                      generateConfirmedOrderWhatsAppMessage(orderId, checkoutData, cart, totalCartAmount)
-                    )}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 text-white text-xs font-bold tracking-widest uppercase hover:bg-emerald-800 transition-colors w-full justify-center"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Track via WhatsApp Concierge
-                  </a>
-                </div>
-              ) : (
-                <>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#8C7355] block mb-1">
-                    Fast Express Checkout
-                  </span>
-                  <h3 className="font-serif text-2xl font-light text-zinc-950 mb-4">
-                    Delivery Details (COD)
-                  </h3>
-
-                  <form onSubmit={handleCheckoutSubmit} className="space-y-3.5 text-xs">
-                    <div>
-                      <label className="block text-zinc-600 font-semibold mb-1">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={checkoutData.name}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
-                        placeholder="e.g. Tariq Mehmood"
-                        className="w-full p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-zinc-600 font-semibold mb-1">WhatsApp / Phone Number *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={checkoutData.phone}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, phone: e.target.value })}
-                        placeholder="0300-1234567"
-                        className="w-full p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-zinc-600 font-semibold mb-1">Complete Street Address *</label>
-                      <input
-                        type="text"
-                        required
-                        value={checkoutData.address}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
-                        placeholder="House / Apartment #, Street, Phase / Block"
-                        className="w-full p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-zinc-600 font-semibold mb-1">City *</label>
-                      <input
-                        type="text"
-                        required
-                        value={checkoutData.city}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, city: e.target.value })}
-                        placeholder="Karachi, Lahore, Islamabad..."
-                        className="w-full p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950"
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        type="submit"
-                        disabled={isSubmittingOrder}
-                        className="w-full py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors shadow-lg disabled:opacity-50"
-                      >
-                        {isSubmittingOrder ? "Confirming Order..." : `Confirm COD Order • PKR ${totalCartAmount.toLocaleString()}`}
-                      </button>
-                    </div>
-                  </form>
-                </>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Floating Concierge */}
       <WhatsAppConcierge />

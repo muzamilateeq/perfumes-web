@@ -16,11 +16,13 @@ import {
   ShoppingBag,
   Gift
 } from "lucide-react";
-import { PERFUMES_DATA } from "@/lib/perfumes";
+import { PERFUMES_DATA, DISCOVERY_SET_ITEM } from "@/lib/perfumes";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { createOrderAction } from "@/app/actions/order";
+import { useStore } from "@/context/StoreContext";
 
 export default function DiscoveryPage() {
+  const store = useStore();
   const [isOrdered, setIsOrdered] = useState(false);
   const [orderRef, setOrderRef] = useState("");
   const [formData, setFormData] = useState({
@@ -33,9 +35,15 @@ export default function DiscoveryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const discoveryItem = {
+    productId: DISCOVERY_SET_ITEM.id,
     name: "Aura Discovery Coffret (6 x 5ml Vials)",
-    priceNum: 4500,
-    priceStr: "PKR 4,500"
+    priceNum: 3500,
+    priceStr: "PKR 3,500"
+  };
+
+  const handleAddToBag = () => {
+    store.addToCart(DISCOVERY_SET_ITEM);
+    store.openCart();
   };
 
   const handleOrder = async (e: React.FormEvent) => {
@@ -50,6 +58,7 @@ export default function DiscoveryPage() {
         paymentMethod: formData.paymentMethod,
         notes: "Discovery Set Order with 100% Voucher",
         items: [{
+          productId: discoveryItem.productId,
           name: discoveryItem.name,
           price: discoveryItem.priceNum,
           quantity: 1
@@ -71,8 +80,8 @@ export default function DiscoveryPage() {
     `✨ *DISCOVERY COFFRET ORDER INQUIRY* ✨\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `Product: *Aura Discovery Coffret (6 x 5ml Glass Atomizers)*\n` +
-    `Price: *PKR 4,500*\n` +
-    `Voucher: 100% Redeemable (PKR 4,500 toward any 50ml flacon)\n` +
+    `Price: *PKR 3,500*\n` +
+    `Voucher: 100% Redeemable (PKR 3,500 toward any 50ml flacon)\n` +
     `Delivery: Free Express Nationwide (COD)\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `Hello! I would like to order the Discovery Box. Please share delivery details.`
@@ -80,7 +89,7 @@ export default function DiscoveryPage() {
 
   return (
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white flex flex-col justify-between">
-      <SiteHeader />
+      <SiteHeader cartCount={store.cartCount} onOpenCart={store.openCart} />
 
       <main className="flex-1">
         
@@ -99,7 +108,7 @@ export default function DiscoveryPage() {
               </h1>
 
               <p className="text-zinc-300 font-light text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-xl">
-                Selecting a signature extrait requires intimate skin chemistry. The Discovery Coffret gives you <strong>all six permanent creations in bespoke 5ml glass atomizers</strong>, accompanied by an embossed black keepsake box and a <strong>100% redeemable PKR 4,500 voucher</strong>.
+                Selecting a signature extrait requires intimate skin chemistry. The Discovery Coffret gives you <strong>all six permanent creations in bespoke 5ml glass atomizers</strong>, accompanied by an embossed black keepsake box and a <strong>100% redeemable PKR 3,500 voucher</strong>.
               </p>
 
               {/* Value Props */}
@@ -109,7 +118,7 @@ export default function DiscoveryPage() {
                   <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">Glass Atomizers</span>
                 </div>
                 <div>
-                  <span className="font-serif text-2xl sm:text-3xl font-light text-[#E0C79F]">PKR 4,500</span>
+                  <span className="font-serif text-2xl sm:text-3xl font-light text-[#E0C79F]">PKR 3,500</span>
                   <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">100% Free Shipping</span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
@@ -120,11 +129,21 @@ export default function DiscoveryPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <a
-                  href="#order-section"
+                <button
+                  type="button"
+                  onClick={handleAddToBag}
                   className="px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-zinc-950 text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase hover:bg-zinc-200 transition-all flex items-center justify-center gap-2.5 shadow-2xl"
                 >
-                  Order With Cash on Delivery <ArrowRight className="w-4 h-4" />
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Add Coffret to Bag • PKR 3,500</span>
+                </button>
+
+                <a
+                  href="#order-section"
+                  className="px-6 sm:px-8 py-3.5 sm:py-4 border border-white/40 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.22em] uppercase hover:bg-white hover:text-zinc-950 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Direct COD Form</span>
+                  <ArrowRight className="w-4 h-4" />
                 </a>
 
                 <a
@@ -280,7 +299,7 @@ export default function DiscoveryPage() {
                 Order Your Discovery Coffret
               </h3>
               <p className="text-xs text-zinc-500 mt-1.5 sm:mt-2">
-                PKR 4,500 • Cash on Delivery Nationwide • Free Delivery
+                PKR 3,500 • Cash on Delivery Nationwide • Free Delivery
               </p>
             </div>
 
@@ -294,14 +313,22 @@ export default function DiscoveryPage() {
                 <p className="text-xs text-zinc-600 mb-5 sm:mb-6 leading-relaxed">
                   Thank you, {formData.name}. Your box will be packed in our sealed black coffret and dispatched within 24 hours.
                 </p>
-                <a
-                  href={buildWhatsAppUrl(`Hello! I placed an order for Discovery Coffret #${orderRef}. Please confirm dispatch timeline.`)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider hover:bg-emerald-600 transition-colors shadow-md"
-                >
-                  <MessageCircle className="w-4 h-4" /> Confirm on WhatsApp
-                </a>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                  <a
+                    href={buildWhatsAppUrl(`Hello! I placed an order for Discovery Coffret #${orderRef}. Please confirm dispatch timeline.`)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider hover:bg-emerald-600 transition-colors shadow-md"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Confirm on WhatsApp
+                  </a>
+                  <Link
+                    href={`/track-order?q=${orderRef}`}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 border border-zinc-900 text-zinc-900 text-xs font-bold uppercase tracking-wider hover:bg-zinc-900 hover:text-white transition-colors"
+                  >
+                    Track Dispatch Status →
+                  </Link>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleOrder} className="space-y-3.5 sm:space-y-4">
@@ -389,7 +416,7 @@ export default function DiscoveryPage() {
                   disabled={isSubmitting}
                   className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl mt-4 flex items-center justify-center gap-2"
                 >
-                  {isSubmitting ? "Registering Order..." : "Confirm Discovery Set • PKR 4,500"}
+                  {isSubmitting ? "Registering Order..." : "Confirm Discovery Set • PKR 3,500"}
                 </button>
               </form>
             )}

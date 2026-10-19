@@ -1,14 +1,16 @@
 import fs from "fs";
 import path from "path";
 import { PERFUMES_DATA, DISCOVERY_SET_ITEM, PerfumeItem } from "./perfumes";
-import { StoreSettings, StoreOrder, DEFAULT_STORE_SETTINGS } from "./storeTypes";
-export type { StoreSettings, StoreOrder };
+import { StoreSettings, StoreOrder, StoreCoupon, StoreReview, DEFAULT_STORE_SETTINGS } from "./storeTypes";
+export type { StoreSettings, StoreOrder, StoreCoupon, StoreReview };
 export { DEFAULT_STORE_SETTINGS };
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
 const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
+const COUPONS_FILE = path.join(DATA_DIR, "coupons.json");
+const REVIEWS_FILE = path.join(DATA_DIR, "reviews.json");
 
 function ensureDirectoryExists() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -40,21 +42,28 @@ export function saveStoreProduct(product: PerfumeItem): { success: boolean; prod
     const products = getStoreProducts();
     const existingIndex = products.findIndex((p) => p.id === product.id || p.slug === product.slug);
 
+    const chosenImage = (product.image || product.bannerImage || "").trim();
+    const finalProduct: PerfumeItem = {
+      ...product,
+      image: chosenImage || product.image,
+      bannerImage: chosenImage || product.bannerImage,
+    };
+
     if (existingIndex >= 0) {
-      products[existingIndex] = { ...products[existingIndex], ...product };
+      products[existingIndex] = { ...products[existingIndex], ...finalProduct };
     } else {
       // Generate new ID and slug if not set
-      if (!product.id) {
-        product.id = Math.max(0, ...products.map((p) => p.id)) + 1;
+      if (!finalProduct.id) {
+        finalProduct.id = Math.max(0, ...products.map((p) => p.id)) + 1;
       }
-      if (!product.slug) {
-        product.slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (!finalProduct.slug) {
+        finalProduct.slug = finalProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       }
-      products.push(product);
+      products.push(finalProduct);
     }
 
     fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2), "utf-8");
-    return { success: true, product };
+    return { success: true, product: finalProduct };
   } catch (error) {
     console.error("Error saving store product:", error);
     throw new Error("Failed to save product");
@@ -198,3 +207,116 @@ export function updateStoreOrderStatus(
     return { success: false };
   }
 }
+
+// 4. QUICK STOCK UPDATE
+export function updateStoreProductStock(id: number, newStock: number): boolean {
+  try {
+    ensureDirectoryExists();
+    const products = getStoreProducts();
+    const index = products.findIndex((p) => p.id === id);
+    if (index >= 0) {
+      products[index].stock = Math.max(0, newStock);
+      fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2), "utf-8");
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error updating product stock:", error);
+    return false;
+  }
+}
+
+// 5. COUPONS MANAGEMENT
+export function getStoreCoupons(): StoreCoupon[] {
+  try {
+    ensureDirectoryExists();
+    if (!fs.existsSync(COUPONS_FILE)) {
+      return [];
+    }
+    const content = fs.readFileSync(COUPONS_FILE, "utf-8");
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Error reading coupons:", error);
+    return [];
+  }
+}
+
+export function saveStoreCoupon(coupon: StoreCoupon): StoreCoupon {
+  try {
+    ensureDirectoryExists();
+    const coupons = getStoreCoupons();
+    const existingIndex = coupons.findIndex((c) => c.id === coupon.id || c.code.toUpperCase() === coupon.code.toUpperCase());
+    if (existingIndex >= 0) {
+      coupons[existingIndex] = { ...coupons[existingIndex], ...coupon };
+    } else {
+      coupons.unshift(coupon);
+    }
+    fs.writeFileSync(COUPONS_FILE, JSON.stringify(coupons, null, 2), "utf-8");
+    return coupon;
+  } catch (error) {
+    console.error("Error saving coupon:", error);
+    throw new Error("Failed to save coupon");
+  }
+}
+
+export function deleteStoreCoupon(id: string): boolean {
+  try {
+    ensureDirectoryExists();
+    const coupons = getStoreCoupons();
+    const filtered = coupons.filter((c) => c.id !== id && c.code !== id);
+    fs.writeFileSync(COUPONS_FILE, JSON.stringify(filtered, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error deleting coupon:", error);
+    return false;
+  }
+}
+
+// 6. REVIEWS MANAGEMENT
+export function getStoreReviews(): StoreReview[] {
+  try {
+    ensureDirectoryExists();
+    if (!fs.existsSync(REVIEWS_FILE)) {
+      return [];
+    }
+    const content = fs.readFileSync(REVIEWS_FILE, "utf-8");
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Error reading reviews:", error);
+    return [];
+  }
+}
+
+export function saveStoreReview(review: StoreReview): StoreReview {
+  try {
+    ensureDirectoryExists();
+    const reviews = getStoreReviews();
+    const existingIndex = reviews.findIndex((r) => r.id === review.id);
+    if (existingIndex >= 0) {
+      reviews[existingIndex] = { ...reviews[existingIndex], ...review };
+    } else {
+      reviews.unshift(review);
+    }
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(reviews, null, 2), "utf-8");
+    return review;
+  } catch (error) {
+    console.error("Error saving review:", error);
+    throw new Error("Failed to save review");
+  }
+}
+
+export function deleteStoreReview(id: string): boolean {
+  try {
+    ensureDirectoryExists();
+    const reviews = getStoreReviews();
+    const filtered = reviews.filter((r) => r.id !== id);
+    fs.writeFileSync(REVIEWS_FILE, JSON.stringify(filtered, null, 2), "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    return false;
+  }
+}
+

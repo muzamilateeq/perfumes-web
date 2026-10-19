@@ -28,7 +28,6 @@ import {
   Compass
 } from "lucide-react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { createOrderAction } from "@/app/actions/order";
 import { getAdminDataAction } from "@/app/actions/admin";
 import WhatsAppConcierge from "@/components/WhatsAppConcierge";
 import SiteFooter from "@/components/SiteFooter";
@@ -38,19 +37,12 @@ import { PERFUMES_DATA, DISCOVERY_SET_ITEM, type PerfumeItem } from "@/lib/perfu
 import { DEFAULT_STORE_SETTINGS, type StoreSettings } from "@/lib/storeTypes";
 import { 
   buildWhatsAppUrl, 
-  generateCartWhatsAppMessage, 
   generateProductWhatsAppMessage, 
-  generateConfirmedOrderWhatsAppMessage, 
   generateConsultationWhatsAppMessage 
 } from "@/lib/whatsapp";
 import { useStore } from "@/context/StoreContext";
 
 type Perfume = PerfumeItem;
-
-interface CartItem {
-  product: Perfume;
-  quantity: number;
-}
 
 export default function LuxuryBrandStorefront() {
   const [perfumes, setPerfumes] = useState<PerfumeItem[]>(PERFUMES_DATA);
@@ -94,14 +86,8 @@ export default function LuxuryBrandStorefront() {
 
   // Store States
   const [selectedCategory, setSelectedCategory] = useState<string>("All Fragrances");
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
   const [quickViewProduct, setQuickViewProduct] = useState<Perfume | null>(null);
-  const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
-  const [orderId, setOrderId] = useState<string>("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [includeGiftBox, setIncludeGiftBox] = useState<boolean>(false);
   const store = useStore();
   const wishlist = store.wishlist;
 
@@ -116,87 +102,15 @@ export default function LuxuryBrandStorefront() {
   const [quizVibe, setQuizVibe] = useState<string>("Woody & Regal Oud");
   const [quizResult, setQuizResult] = useState<Perfume | null>(null);
 
-  // Fast Checkout Form
-  const [checkoutData, setCheckoutData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    city: "Karachi",
-    notes: "",
-    paymentMethod: "COD"
-  });
-
   const categories = ["All Fragrances", "Woody & Oud", "Floral & Rose", "Fresh & Citrus", "Warm Gourmand"];
 
   const filteredPerfumes = selectedCategory === "All Fragrances"
     ? perfumes
     : perfumes.filter(p => p.category === selectedCategory);
 
-  const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const totalCartAmount = cart.reduce((acc, item) => acc + (item.product.priceNum * item.quantity), 0);
-
   const addToCart = (product: Perfume) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const updateQuantity = (productId: number, delta: number) => {
-    setCart(prev => {
-      return prev
-        .map(item => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[];
-    });
-  };
-
-  const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
-
-  const handleCheckoutSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmittingOrder(true);
-    try {
-      const res = await createOrderAction({
-        customerName: checkoutData.name,
-        customerPhone: checkoutData.phone,
-        customerAddress: checkoutData.address,
-        customerCity: checkoutData.city,
-        paymentMethod: checkoutData.paymentMethod,
-        notes: includeGiftBox ? "Gift Box Requested" : undefined,
-        items: cart.map(item => ({
-          productId: item.product.id,
-          name: item.product.name,
-          price: item.product.priceNum,
-          quantity: item.quantity
-        })),
-        total: totalCartAmount
-      });
-
-      setOrderId(res.orderNumber);
-      setOrderSuccess(true);
-      setCart([]);
-    } catch (err) {
-      const generatedId = "AUR-" + Math.floor(100000 + Math.random() * 900000);
-      setOrderId(generatedId);
-      setOrderSuccess(true);
-      setCart([]);
-    } finally {
-      setIsSubmittingOrder(false);
-    }
+    store.addToCart(product);
+    store.openCart();
   };
 
   const handleQuizFind = () => {
@@ -233,7 +147,7 @@ export default function LuxuryBrandStorefront() {
     <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 selection:bg-zinc-950 selection:text-white overflow-x-hidden">
       
       {/* Primary Navigation & Announcement Bar */}
-      <SiteHeader cartCount={totalCartCount} onOpenCart={() => setIsCartOpen(true)} />
+      <SiteHeader cartCount={store.cartCount} onOpenCart={store.openCart} />
 
       {/* 3. FULL-WIDTH CINEMATIC HERO SHOWCASE (CLICK PICTURE TO OPEN PERFUME PAGE) */}
       <section 
@@ -256,7 +170,11 @@ export default function LuxuryBrandStorefront() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={activePerfume.bannerImage || activePerfume.image.replace("w=800", "w=1920")} 
+                src={
+                  activePerfume.image 
+                    ? activePerfume.image.replace("w=800", "w=1920") 
+                    : (activePerfume.bannerImage || "/banners/oud-royale.png")
+                } 
                 alt={activePerfume.name} 
                 className="w-full h-full object-cover object-[70%_center] md:object-center brightness-[0.92] contrast-[1.05] group-hover:scale-102 transition-transform duration-1000 ease-out"
               />
@@ -895,169 +813,7 @@ export default function LuxuryBrandStorefront() {
       {/* 12. LUXURY FOOTER */}
       <SiteFooter />
 
-      {/* 13. SLIDE-OVER SHOPPING BAG WITH FREE GIFT & SHIPPING PROGRESS */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCartOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            />
 
-            <motion.div 
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 w-full sm:max-w-md h-full bg-white z-50 shadow-2xl flex flex-col justify-between"
-            >
-              {/* Header */}
-              <div className="p-4 sm:p-6 border-b border-zinc-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-950" />
-                  <span className="text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase text-zinc-950">
-                    Your Shopping Bag ({totalCartCount})
-                  </span>
-                </div>
-                <button 
-                  onClick={() => setIsCartOpen(false)}
-                  className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5 text-zinc-600" />
-                </button>
-              </div>
-
-              {/* Free Shipping Progress Indicator */}
-              <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#FAF7F2] border-b border-[#EBE4D8] flex items-center gap-2 text-xs font-semibold text-[#7A6448]">
-                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] shrink-0" />
-                <span>You've unlocked Free Nationwide Delivery!</span>
-              </div>
-
-              {/* Items List */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-                {cart.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center py-16 sm:py-20">
-                    <ShoppingBag className="w-10 h-10 sm:w-12 sm:h-12 text-zinc-300 mb-3 sm:mb-4" strokeWidth={1} />
-                    <p className="text-sm font-light text-zinc-600 mb-1.5 sm:mb-2">Your shopping bag is empty.</p>
-                    <p className="text-xs text-zinc-400 max-w-xs mb-6">Explore our signature flacons or order the Discovery Coffret to test all extraits.</p>
-                    <button 
-                      onClick={() => setIsCartOpen(false)}
-                      className="px-6 py-3 bg-zinc-950 text-white text-xs font-bold tracking-widest uppercase hover:bg-zinc-800 transition-colors"
-                    >
-                      Browse Flacons
-                    </button>
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.product.id} className="flex gap-3.5 sm:gap-4 pb-5 sm:pb-6 border-b border-zinc-100">
-                      <div className="w-16 h-20 sm:w-20 sm:h-24 bg-zinc-100 shrink-0 border border-zinc-200 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={item.product.image} 
-                          alt={item.product.name} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-serif text-sm sm:text-base font-medium text-zinc-950">{item.product.name}</h4>
-                            <span className="text-xs font-bold text-zinc-900 shrink-0">{item.product.price}</span>
-                          </div>
-                          <p className="text-[10px] text-zinc-400 tracking-wider uppercase mt-0.5">{item.product.concentration}</p>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3 sm:mt-4">
-                          <div className="flex items-center border border-zinc-200">
-                            <button 
-                              onClick={() => updateQuantity(item.product.id, -1)}
-                              className="px-2 py-1 text-zinc-600 hover:bg-zinc-100 transition-colors"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="px-2.5 sm:px-3 text-xs font-medium text-zinc-900">{item.quantity}</span>
-                            <button 
-                              onClick={() => updateQuantity(item.product.id, 1)}
-                              className="px-2 py-1 text-zinc-600 hover:bg-zinc-100 transition-colors"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-
-                          <button 
-                            onClick={() => updateQuantity(item.product.id, -item.quantity)}
-                            className="text-[10px] sm:text-[11px] font-bold text-zinc-400 hover:text-red-600 transition-colors uppercase tracking-wider"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Complimentary Gift Box Checkbox */}
-              {cart.length > 0 && (
-                <div className="px-4 sm:px-6 py-3 border-t border-zinc-200 bg-white">
-                  <label className="flex items-center gap-2.5 sm:gap-3 cursor-pointer text-xs text-zinc-700">
-                    <input 
-                      type="checkbox" 
-                      checked={includeGiftBox}
-                      onChange={(e) => setIncludeGiftBox(e.target.checked)}
-                      className="rounded border-zinc-300 text-zinc-900 focus:ring-0"
-                    />
-                    <Gift className="w-4 h-4 text-[#8C7355] shrink-0" />
-                    <span>Include free gift packaging & wax seal ribbon</span>
-                  </label>
-                </div>
-              )}
-
-              {/* Footer / Proceed to Checkout */}
-              {cart.length > 0 && (
-                <div className="p-4 sm:p-6 bg-[#FAF9F8] border-t border-zinc-200 space-y-3.5 pb-8 sm:pb-6">
-                  <div className="flex justify-between text-xs text-zinc-500 uppercase tracking-widest">
-                    <span>Shipping</span>
-                    <span className="text-emerald-700 font-bold">Complimentary Express</span>
-                  </div>
-                  <div className="flex justify-between text-sm sm:text-base font-bold text-zinc-950">
-                    <span>Total Amount</span>
-                    <span className="font-serif text-lg sm:text-xl">PKR {totalCartAmount.toLocaleString()}</span>
-                  </div>
-                  <div className="space-y-2">
-                    <button 
-                      onClick={() => {
-                        setIsCartOpen(false);
-                        setIsCheckoutOpen(true);
-                      }}
-                      className="w-full py-3.5 sm:py-4 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-2.5"
-                    >
-                      Proceed to Checkout <ArrowRight className="w-4 h-4" />
-                    </button>
-
-                    <a 
-                      href={buildWhatsAppUrl(generateCartWhatsAppMessage(cart, totalCartAmount, { notes: includeGiftBox ? "Gift Box Requested" : undefined }))}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full py-3 sm:py-3.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase transition-colors flex items-center justify-center gap-2 shadow-md rounded-xs"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Order Entire Bag via WhatsApp</span>
-                    </a>
-                  </div>
-                  <p className="text-[10px] text-zinc-400 text-center tracking-widest uppercase">
-                    Cash on Delivery (COD) & Raast / Cards Accepted
-                  </p>
-                </div>
-              )}
-
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* 14. PRODUCT QUICK VIEW MODAL (INSPECT OLFACTORY PYRAMID) */}
       <AnimatePresence>
@@ -1159,177 +915,8 @@ export default function LuxuryBrandStorefront() {
         )}
       </AnimatePresence>
 
-      {/* 15. EXPRESS CASH ON DELIVERY CHECKOUT MODAL */}
-      <AnimatePresence>
-        {isCheckoutOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCheckoutOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            />
-
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="fixed inset-0 sm:inset-6 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[650px] sm:max-h-[90vh] h-full sm:h-auto bg-white z-50 shadow-2xl overflow-y-auto p-5 sm:p-8 md:p-10 border border-zinc-200 sm:rounded-sm"
-            >
-              <div className="flex justify-between items-center pb-4 sm:pb-6 border-b border-zinc-200 mb-5 sm:mb-6">
-                <div>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950">Express Checkout</h3>
-                  <p className="text-xs text-zinc-500 mt-0.5 sm:mt-1">Complete your order with Cash on Delivery</p>
-                </div>
-                <button 
-                  onClick={() => setIsCheckoutOpen(false)}
-                  className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5 text-zinc-500" />
-                </button>
-              </div>
-
-              {orderSuccess ? (
-                <div className="py-8 sm:py-12 text-center">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                    <Check className="w-7 h-7 sm:w-8 sm:h-8" />
-                  </div>
-                  <h4 className="font-serif text-2xl sm:text-3xl font-light text-zinc-950 mb-1.5 sm:mb-2">Order Confirmed!</h4>
-                  <p className="text-xs sm:text-sm font-bold text-zinc-900 mb-1">Order Reference: #{orderId}</p>
-                  <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-6 sm:mb-8 leading-relaxed">
-                    Thank you, {checkoutData.name}. Your order has been registered for Cash on Delivery. 
-                    Our concierge will dispatch your sealed package with the complimentary matching tester vial.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center">
-                    <a
-                      href={buildWhatsAppUrl(generateConfirmedOrderWhatsAppMessage(orderId, checkoutData, cart, totalCartAmount))}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-6 py-3.5 bg-emerald-700 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-emerald-600 transition-colors inline-flex items-center justify-center gap-2 shadow-lg"
-                    >
-                      <MessageCircle className="w-4 h-4" /> Send Receipt to WhatsApp
-                    </a>
-                    <button 
-                      onClick={() => {
-                        setOrderSuccess(false);
-                        setIsCheckoutOpen(false);
-                      }}
-                      className="px-6 py-3.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.18em] sm:tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors"
-                    >
-                      Continue Browsing
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleCheckoutSubmit} className="space-y-4 sm:space-y-6">
-                  
-                  {/* Summary Bar */}
-                  <div className="p-3.5 sm:p-4 bg-zinc-50 border border-zinc-200 flex justify-between items-center text-xs">
-                    <span className="font-semibold text-zinc-700">Total Payable at Doorstep:</span>
-                    <span className="font-serif text-lg sm:text-xl font-bold text-zinc-950">PKR {totalCartAmount.toLocaleString()}</span>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
-                    <div>
-                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
-                        Recipient Full Name *
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="e.g. Tariq Mansoor"
-                        value={checkoutData.name}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
-                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
-                        WhatsApp / Mobile No *
-                      </label>
-                      <input 
-                        type="tel" 
-                        required
-                        placeholder="0300 1234567"
-                        value={checkoutData.phone}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, phone: e.target.value })}
-                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
-                      Complete Delivery Address *
-                    </label>
-                    <textarea 
-                      rows={2}
-                      required
-                      placeholder="House / Apartment no, Street, Sector / Area..."
-                      value={checkoutData.address}
-                      onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
-                      className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
-                    <div>
-                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
-                        Destination City *
-                      </label>
-                      <select 
-                        value={checkoutData.city}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, city: e.target.value })}
-                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none"
-                      >
-                        <option>Karachi</option>
-                        <option>Lahore</option>
-                        <option>Islamabad</option>
-                        <option>Rawalpindi</option>
-                        <option>Faisalabad</option>
-                        <option>Multan</option>
-                        <option>Peshawar</option>
-                        <option>Quetta</option>
-                        <option>Sialkot</option>
-                        <option>Other City (Pakistan)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-600 mb-1.5 sm:mb-2">
-                        Payment Mode
-                      </label>
-                      <select 
-                        value={checkoutData.paymentMethod}
-                        onChange={(e) => setCheckoutData({ ...checkoutData, paymentMethod: e.target.value })}
-                        className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#FAF9F8] border border-zinc-300 text-base sm:text-sm focus:border-zinc-950 focus:outline-none font-bold"
-                      >
-                        <option value="COD">Cash on Delivery (Pay at Doorstep)</option>
-                        <option value="BANK">Direct Bank Transfer / Raast</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="w-full py-3.5 sm:py-4.5 bg-zinc-950 text-white text-xs font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase hover:bg-zinc-800 transition-colors shadow-xl flex items-center justify-center gap-2.5 mt-4 sm:mt-6"
-                  >
-                    Confirm Order (PKR {totalCartAmount.toLocaleString()}) <ArrowRight className="w-4 h-4" />
-                  </button>
-
-                  <p className="text-[10px] sm:text-[11px] text-zinc-400 text-center tracking-wider">
-                    🔒 Free Delivery Nationwide • Free Matching Tester Vial Included
-                  </p>
-                </form>
-              )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* 16. LUXURY INTERACTIVE WHATSAPP CONCIERGE WIDGET */}
-      <WhatsAppConcierge cart={cart} totalCartAmount={totalCartAmount} />
+      {/* 15. LUXURY INTERACTIVE WHATSAPP CONCIERGE WIDGET */}
+      <WhatsAppConcierge />
 
     </div>
   );

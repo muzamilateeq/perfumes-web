@@ -21,7 +21,11 @@
     "bestOccasion": "Evenings, Weddings & Black Tie",
     "season": "Autumn / Winter / Formal Evenings",
     "gender": "Unisex — Regal Presence",
-    "story": "Distilled from rare Cambodian agarwood matured for two decades. Oud Royale represents unhurried luxury—a tribute to Eastern heritage reimagined with French haute perfumerie precision."
+    "story": "Distilled from rare Cambodian agarwood matured for two decades. Oud Royale represents unhurried luxury—a tribute to Eastern heritage reimagined with French haute perfumerie precision.",
+    "stock": 4,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/01",
+    "maturation": "20-Year Aged Agarwood • 6-Month Matured"
   },
   {
     "id": 2,
@@ -45,7 +49,11 @@
     "bestOccasion": "Romantic Dinners & Special Occasions",
     "season": "All Year / Spring Evenings",
     "gender": "Unisex — Sensual & Romantic",
-    "story": "Over five thousand French rose petals cold-extracted to produce a single flacon. Velvet Rose is dark, moody, and magnetic—far removed from ordinary sugary florals."
+    "story": "Over five thousand French rose petals cold-extracted to produce a single flacon. Velvet Rose is dark, moody, and magnetic—far removed from ordinary sugary florals.",
+    "stock": 29,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/02",
+    "maturation": "6 Months Cold Matured Extrait"
   },
   {
     "id": 3,
@@ -69,7 +77,11 @@
     "bestOccasion": "Daily Signature, Executive Office & Summer",
     "season": "Spring / Summer / Hot Climates",
     "gender": "Unisex — Crisp & Invigorating",
-    "story": "Unlike mass-market colognes that fade within an hour, Midnight Citrus blends sun-drenched Italian bergamot with high-oil Haitian vetiver, guaranteeing true 14-hour skin longevity."
+    "story": "Unlike mass-market colognes that fade within an hour, Midnight Citrus blends sun-drenched Italian bergamot with high-oil Haitian vetiver, guaranteeing true 14-hour skin longevity.",
+    "stock": 34,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/03",
+    "maturation": "6 Months Cold Matured Extrait"
   },
   {
     "id": 4,
@@ -93,7 +105,11 @@
     "bestOccasion": "All Seasons & Executive Boardrooms",
     "season": "Versatile Signature Year-Round",
     "gender": "Unisex — Quiet Luxury Standard",
-    "story": "The crown jewel of the house. Formulated with 35% pure fragrance oil weight. The drydown leaves an addictive sillage of soft Italian glove leather and buttery sandalwood."
+    "story": "The crown jewel of the house. Formulated with 35% pure fragrance oil weight. The drydown leaves an addictive sillage of soft Italian glove leather and buttery sandalwood.",
+    "stock": 39,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/04",
+    "maturation": "6 Months Cold Matured Extrait"
   },
   {
     "id": 5,
@@ -117,7 +133,11 @@
     "bestOccasion": "Cozy Evenings & Autumn/Winter",
     "season": "Autumn / Winter / Chilly Nights",
     "gender": "Unisex — Intimate & Comforting",
-    "story": "An elevated gourmand devoid of artificial sweetness. Real bourbon vanilla beans macerated in cold alcohol drums, creating a smoky, caramelized veil that warms to your skin."
+    "story": "An elevated gourmand devoid of artificial sweetness. Real bourbon vanilla beans macerated in cold alcohol drums, creating a smoky, caramelized veil that warms to your skin.",
+    "stock": 44,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/05",
+    "maturation": "6 Months Cold Matured Extrait"
   },
   {
     "id": 6,
@@ -141,6 +161,10 @@
     "bestOccasion": "High Summer, Beach & Tropical Days",
     "season": "Spring / Summer / Beach Vacations",
     "gender": "Unisex — Aquatic Cleanliness",
-    "story": "Capturing the salty breeze of Mediterranean cliffs at dawn. Marine mist harmonized with sun-bleached cedarwood, formulating a cooling sanctuary from tropical heat."
+    "story": "Capturing the salty breeze of Mediterranean cliffs at dawn. Marine mist harmonized with sun-bleached cedarwood, formulating a cooling sanctuary from tropical heat.",
+    "stock": 49,
+    "lowStockAlert": 5,
+    "batchNumber": "AUR-B26/06",
+    "maturation": "6 Months Cold Matured Extrait"
   }
 ]

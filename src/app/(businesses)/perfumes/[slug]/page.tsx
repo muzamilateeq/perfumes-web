@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPerfumeBySlug, getAllPerfumes, PERFUMES_DATA } from "@/lib/perfumes";
-import { getStoreSettings } from "@/lib/storeManager";
+import { getStoreProducts, getStoreSettings } from "@/lib/storeManager";
 import PerfumeDetailClient from "./PerfumeDetailClient";
 
 interface PageProps {
@@ -10,14 +9,16 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return PERFUMES_DATA.map((perfume) => ({
+  const products = getStoreProducts();
+  return products.map((perfume) => ({
     slug: perfume.slug,
   }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const perfume = getPerfumeBySlug(slug);
+  const products = getStoreProducts();
+  const perfume = products.find((p) => p.slug === slug || p.id.toString() === slug);
 
   if (!perfume) {
     return {
@@ -46,13 +47,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 async function PerfumeContent({ params }: PageProps) {
   const { slug } = await params;
-  const perfume = getPerfumeBySlug(slug);
+  const allPerfumes = getStoreProducts();
+  const perfume = allPerfumes.find((p) => p.slug === slug || p.id.toString() === slug);
 
   if (!perfume) {
     notFound();
   }
 
-  const allPerfumes = getAllPerfumes();
   const relatedPerfumes = allPerfumes.filter((p) => p.slug !== perfume.slug).slice(0, 4);
   const settings = getStoreSettings();
 

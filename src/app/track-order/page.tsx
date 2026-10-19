@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import WhatsAppConcierge from "@/components/WhatsAppConcierge";
@@ -12,12 +13,12 @@ import {
   ShieldCheck, 
   MessageCircle, 
   CheckCircle2, 
-  ArrowRight,
-  PackageCheck,
-  AlertCircle,
-  Phone,
-  Box,
-  RotateCcw
+  ArrowRight, 
+  PackageCheck, 
+  AlertCircle, 
+  Phone, 
+  Box, 
+  RotateCcw 
 } from "lucide-react";
 import { trackOrderAction } from "@/app/actions/order";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -44,7 +45,8 @@ interface TrackedOrder {
   createdAt: string;
 }
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [result, setResult] = useState<TrackedOrder | null>(null);
@@ -64,6 +66,14 @@ export default function TrackOrderPage() {
       setErrorMsg(res.message || "No order found. Please check your reference ID or phone number.");
     }
   };
+
+  useEffect(() => {
+    const initialQuery = searchParams.get("q");
+    if (initialQuery && initialQuery.trim()) {
+      setQuery(initialQuery);
+      handleTrackQuery(initialQuery);
+    }
+  }, [searchParams]);
 
   const handleTrackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,5 +435,22 @@ export default function TrackOrderPage() {
       <SiteFooter />
       <WhatsAppConcierge />
     </div>
+  );
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FBFBF9] flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="w-8 h-8 border-2 border-[#8C7355] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="font-serif text-xs tracking-widest uppercase text-zinc-500">Loading Order Tracking...</p>
+          </div>
+        </div>
+      }
+    >
+      <TrackOrderContent />
+    </Suspense>
   );
 }

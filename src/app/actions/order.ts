@@ -1,7 +1,16 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { saveStoreOrder, getStoreOrders, StoreOrder } from "@/lib/storeManager";
+import { 
+  saveStoreOrder, 
+  getStoreOrders, 
+  getStoreProducts, 
+  updateStoreProductStock, 
+  getStoreCoupons, 
+  saveStoreCoupon, 
+  StoreOrder 
+} from "@/lib/storeManager";
+import { revalidatePath } from "next/cache";
 
 export interface OrderInput {
   customerName: string;
@@ -10,6 +19,8 @@ export interface OrderInput {
   customerCity: string;
   paymentMethod: string;
   notes?: string;
+  couponCode?: string;
+  discountAmount?: number;
   items: {
     productId?: number | string;
     name: string;
@@ -32,6 +43,8 @@ export async function createOrderAction(data: OrderInput) {
     customerCity: data.customerCity,
     paymentMethod: data.paymentMethod || "COD",
     notes: data.notes || undefined,
+    couponCode: data.couponCode || undefined,
+    discountAmount: data.discountAmount || 0,
     total: data.total,
     status: "PENDING",
     items: data.items,
@@ -51,27 +64,98 @@ export async function createOrderAction(data: OrderInput) {
         }))
       : [];
 
-    await prisma.order.create({
-      data: {
-        orderNumber: generatedOrderNumber,
-        customerName: data.customerName,
-        customerPhone: data.customerPhone,
-        customerAddress: data.customerAddress,
-        customerCity: data.customerCity,
-        paymentMethod: data.paymentMethod || "COD",
-        notes: data.notes || null,
-        total: data.total,
-        status: "PENDING",
-        trackingNumber: trackingCode,
-        ...(orderItemsData.length > 0
-          ? {
-              items: {
-                create: orderItemsData,
-              },
-            }
-          : {}),
-      },
-    });
+    try {
+      await prisma.order.create({
+        data: {
+          orderNumber: generatedOrderNumber,
+          customerName: data.customerName,
+          customerPhone: data.customerPhone,
+          customerAddress: data.customerAddress,
+          customerCity: data.customerCity,
+          paymentMethod: data.paymentMethod || "COD",
+          notes: data.notes || null,
+          couponCode: data.couponCode || null,
+          discountAmount: data.discountAmount || 0,
+          total: data.total,
+          status: "PENDING",
+          trackingNumber: trackingCode,
+          ...(orderItemsData.length > 0
+            ? {
+                items: {
+                  create: orderItemsData,
+                },
+              }
+            : {}),
+        },
+      });
+    } catch (createErr: any) {
+      // If line-item FK failed, persist the order record directly
+      await prisma.order.create({
+        data: {
+          orderNumber: generatedOrderNumber,
+          customerName: data.customerName,
+          customerPhone: data.customerPhone,
+          customerAddress: data.customerAddress,
+          customerCity: data.customerCity,
+          paymentMethod: data.paymentMethod || "COD",
+          notes: [data.notes, data.items.map(it => `${it.name} (x${it.quantity})`).join(", ")].filter(Boolean).join(" | "),
+          couponCode: data.couponCode || null,
+          discountAmount: data.discountAmount || 0,
+          total: data.total,
+          status: "PENDING",
+          trackingNumber: trackingCode,
+        },
+      });
+    }
+
+    // If coupon used, increment its redemption count in Prisma & StoreManager
+    if (data.couponCode) {
+      const codeUpper = data.couponCode.trim().toUpperCase();
+      try {
+        await prisma.coupon.update({
+          where: { code: codeUpper },
+          data: { usedCount: { increment: 1 } },
+        });
+      } catch {}
+
+      try {
+        const coupons = getStoreCoupons();
+        const found = coupons.find((c) => c.code.toUpperCase() === codeUpper);
+        if (found) {
+          saveStoreCoupon({
+            ...found,
+            usedCount: (found.usedCount || 0) + 1,
+          });
+        }
+      } catch {}
+    }
+
+    // Decrement stock in both storeManager and Supabase for each ordered item
+    const currentProducts = getStoreProducts();
+    for (const item of data.items) {
+      if (item.productId) {
+        const numId = parseInt(String(item.productId), 10);
+        if (!isNaN(numId)) {
+          const prod = currentProducts.find((p) => p.id === numId);
+          if (prod && typeof prod.stock === "number") {
+            const nextStock = Math.max(0, prod.stock - (item.quantity || 1));
+            updateStoreProductStock(numId, nextStock);
+          }
+        }
+
+        try {
+          await prisma.product.update({
+            where: { id: String(item.productId) },
+            data: { stock: { decrement: item.quantity || 1 } },
+          });
+        } catch {}
+      }
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/perfumes");
+    revalidatePath("/perfumes/[slug]", "page");
+    revalidatePath("/");
   } catch (error: any) {
     console.warn("Prisma sync notice (order saved to storeManager):", error?.message);
   }

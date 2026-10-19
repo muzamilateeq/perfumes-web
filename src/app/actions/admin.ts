@@ -8,6 +8,7 @@ import {
   saveStoreSettings, 
   getStoreOrders, 
   updateStoreOrderStatus,
+  updateStoreProductStock,
   StoreSettings,
   StoreOrder
 } from "@/lib/storeManager";
@@ -104,10 +105,18 @@ export async function saveProductAction(product: PerfumeItem) {
     const priceNum = typeof product.priceNum === "number" ? product.priceNum : parseInt(String(product.priceNum).replace(/[^0-9]/g, "")) || 0;
     const priceFormatted = product.price.startsWith("PKR") ? product.price : `PKR ${priceNum.toLocaleString()}`;
 
+    const chosenImage = (product.image || product.bannerImage || "/banners/oud-royale.png").trim();
+
     const updatedProduct: PerfumeItem = {
       ...product,
+      image: chosenImage,
+      bannerImage: chosenImage,
       priceNum,
       price: priceFormatted,
+      stock: product.stock !== undefined ? product.stock : 50,
+      batchNumber: product.batchNumber || "AUR-B26/01",
+      maturation: product.maturation || "6 Months Cold Matured Extrait",
+      lowStockAlert: product.lowStockAlert !== undefined ? product.lowStockAlert : 5,
       slug: product.slug || product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
     };
 
@@ -121,15 +130,22 @@ export async function saveProductAction(product: PerfumeItem) {
           title: res.product.name,
           description: res.product.description || res.product.story || "",
           price: priceNum,
-          images: [res.product.bannerImage || res.product.image || "/banners/oud-royale.png"],
+          stock: updatedProduct.stock,
+          batchNumber: updatedProduct.batchNumber,
+          maturation: updatedProduct.maturation,
+          lowStockAlert: updatedProduct.lowStockAlert,
+          images: [chosenImage],
         },
         create: {
           id: String(res.product.id),
           title: res.product.name,
           description: res.product.description || res.product.story || "",
           price: priceNum,
-          stock: 50,
-          images: [res.product.bannerImage || res.product.image || "/banners/oud-royale.png"],
+          stock: updatedProduct.stock,
+          batchNumber: updatedProduct.batchNumber,
+          maturation: updatedProduct.maturation,
+          lowStockAlert: updatedProduct.lowStockAlert,
+          images: [chosenImage],
           businessId: "biz-aura",
         },
       });
@@ -140,6 +156,7 @@ export async function saveProductAction(product: PerfumeItem) {
     revalidatePath("/admin");
     revalidatePath("/");
     revalidatePath("/perfumes");
+    revalidatePath("/perfumes/[slug]", "page");
     revalidatePath(`/perfumes/${updatedProduct.slug}`);
 
     return {
@@ -153,6 +170,28 @@ export async function saveProductAction(product: PerfumeItem) {
       success: false,
       error: error?.message || "Failed to save product",
     };
+  }
+}
+
+export async function updateProductStockAction(id: number, newStock: number) {
+  try {
+    updateStoreProductStock(id, newStock);
+
+    try {
+      await prisma.product.update({
+        where: { id: String(id) },
+        data: { stock: Math.max(0, newStock) },
+      });
+    } catch (e: any) {
+      console.warn("Prisma stock update notice:", e?.message);
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/perfumes");
+    revalidatePath("/perfumes/[slug]", "page");
+    return { success: true, newStock, message: `Stock updated to ${newStock} units` };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Failed to update stock" };
   }
 }
 
