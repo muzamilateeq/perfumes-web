@@ -46,7 +46,8 @@ import {
   Tag,
   Percent,
   Upload,
-  Loader2
+  Loader2,
+  Menu
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -87,6 +88,7 @@ export default function AdminDashboardClient({
 
   // Navigation & Tabs
   const [activeTab, setActiveTab] = useState<"overview" | "products" | "orders" | "coupons" | "reviews" | "settings" | "content">("overview");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out of the Executive Portal?")) {
@@ -482,8 +484,101 @@ export default function AdminDashboardClient({
     maturation: "6 Months Cold Matured Extrait",
   });
 
+  const navGroups = [
+    {
+      title: "Store Intelligence",
+      items: [
+        {
+          id: "overview",
+          label: "Executive Analytics",
+          icon: TrendingUp,
+          badge: null,
+          badgeColor: "",
+        },
+      ],
+    },
+    {
+      title: "Commerce & Fulfillment",
+      items: [
+        {
+          id: "orders",
+          label: "Client Orders",
+          icon: Package,
+          badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} New` : orders.length.toString(),
+          badgeColor: pendingOrdersCount > 0 ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-zinc-100 text-zinc-600 border-zinc-200",
+        },
+        {
+          id: "products",
+          label: "Perfumes & Flacons",
+          icon: Layers,
+          badge: products.length.toString(),
+          badgeColor: "bg-zinc-100 text-zinc-600 border-zinc-200",
+        },
+      ],
+    },
+    {
+      title: "Growth & Marketing",
+      items: [
+        {
+          id: "coupons",
+          label: "Promo & Coupons",
+          icon: Tag,
+          badge: coupons.length.toString(),
+          badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
+        },
+        {
+          id: "reviews",
+          label: "Collector Reviews",
+          icon: Star,
+          badge: adminReviews.length.toString(),
+          badgeColor: "bg-zinc-100 text-zinc-600 border-zinc-200",
+        },
+      ],
+    },
+    {
+      title: "Boutique Experience",
+      items: [
+        {
+          id: "content",
+          label: "Story & Details CMS",
+          icon: Sparkles,
+          badge: null,
+          badgeColor: "",
+        },
+        {
+          id: "settings",
+          label: "Store Controls & WhatsApp",
+          icon: Settings,
+          badge: null,
+          badgeColor: "",
+        },
+      ],
+    },
+  ];
+
+  const getActiveTabInfo = () => {
+    switch (activeTab) {
+      case "overview":
+        return { title: "Executive Analytics", subtitle: "Real-time revenue, order KPIs, and performance summary" };
+      case "orders":
+        return { title: "Client Orders & Fulfillment", subtitle: "Manage COD / Bank orders, courier dispatches, and WhatsApp invoices" };
+      case "products":
+        return { title: "Perfumes & Flacons Inventory", subtitle: "Manage 100% Extrait creations, formula notes, stock levels, and batch info" };
+      case "coupons":
+        return { title: "Promotions & Luxury Coupons", subtitle: "Manage percentage & fixed rupee discount codes and redemption limits" };
+      case "reviews":
+        return { title: "Collector Reviews & Ratings", subtitle: "Moderate client feedback, verified buyer badges, and longevity ratings" };
+      case "content":
+        return { title: "Story & Brand Content CMS", subtitle: "Edit 90-day maceration narrative, fragrance guidelines, and boutique copy" };
+      case "settings":
+        return { title: "Store Controls & WhatsApp Concierge", subtitle: "Configure concierge phone number, delivery policies, and ticker banner" };
+      default:
+        return { title: "Executive Portal", subtitle: "Aura Haute Parfumerie Control Suite" };
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FBFBF9] text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white">
+    <div className="min-h-screen bg-[#F7F7F4] text-zinc-900 font-sans selection:bg-zinc-950 selection:text-white flex flex-col lg:flex-row">
       
       {/* Toast Notification */}
       <AnimatePresence>
@@ -500,106 +595,316 @@ export default function AdminDashboardClient({
         )}
       </AnimatePresence>
 
-      {/* Top Header Bar (Clean, Crisp, Luxury) */}
-      <header className="border-b border-zinc-200 bg-white/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-          
-          <div className="flex items-center gap-3 sm:gap-4">
+      {/* 1. MOBILE DRAWER SIDEBAR */}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 240 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white text-zinc-900 z-50 shadow-2xl flex flex-col justify-between border-r border-zinc-200 lg:hidden"
+            >
+              <div>
+                <div className="p-5 border-b border-zinc-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-950 text-white flex items-center justify-center font-serif text-lg shadow-sm">
+                      A
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-serif text-lg font-light tracking-[0.2em] uppercase text-zinc-950">AURA</span>
+                        <span className="px-1.5 py-0.2 rounded bg-[#FAF7F2] text-[#8C7355] text-[9px] font-bold tracking-wider uppercase border border-[#E8E2D8]">Portal</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 font-mono tracking-wider">HAUTE PARFUMERIE</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="p-1.5 text-zinc-400 hover:text-zinc-900 rounded-lg hover:bg-zinc-100"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="px-5 py-2.5 bg-[#FAF9F7] border-b border-zinc-100 flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-medium text-zinc-700">Live Boutique System</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400">v2.4</span>
+                </div>
+
+                <div className="p-3.5 space-y-5 overflow-y-auto max-h-[calc(100vh-210px)]">
+                  {navGroups.map((group) => (
+                    <div key={group.title} className="space-y-1">
+                      <span className="px-3 text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-400 block mb-1.5">
+                        {group.title}
+                      </span>
+                      <div className="space-y-0.5">
+                        {group.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = activeTab === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setActiveTab(item.id as any);
+                                setIsMobileSidebarOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                                isActive
+                                  ? "bg-zinc-950 text-white shadow-sm"
+                                  : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <Icon className={`w-4 h-4 ${isActive ? "text-[#C5A880]" : "text-zinc-400"}`} />
+                                <span>{item.label}</span>
+                              </div>
+                              {item.badge && (
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    isActive ? "bg-white/20 text-white border-white/20" : item.badgeColor
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-zinc-100 bg-[#FAF9F7] space-y-2">
+                <Link
+                  href="/"
+                  target="_blank"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-zinc-200 text-xs font-bold text-zinc-700 hover:text-zinc-950 hover:border-zinc-400 transition-colors shadow-2xs"
+                >
+                  <span className="flex items-center gap-2">
+                    <ExternalLink className="w-3.5 h-3.5 text-[#8C7355]" />
+                    <span>View Storefront</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase">Live ↗</span>
+                </Link>
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-zinc-950 text-white text-xs font-bold flex items-center justify-center">
+                      M
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900 leading-tight">Muzammil</p>
+                      <p className="text-[9px] text-zinc-400 font-mono">Founder & Director</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 2. DESKTOP PERMANENT SIDEBAR */}
+      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-zinc-200/90 h-screen sticky top-0 shrink-0 z-40 select-none shadow-xs justify-between">
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Brand Header */}
+          <div className="p-5 border-b border-zinc-100 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-serif text-lg">
+              <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center text-white font-serif text-lg shadow-sm">
                 A
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-serif text-lg sm:text-xl font-light tracking-[0.2em] uppercase text-zinc-950">
-                    Aura
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-[#FAF7F2] text-[#8C7355] text-[10px] font-bold tracking-wider uppercase border border-[#E8E2D8]">
-                    Admin Portal
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-serif text-lg font-light tracking-[0.2em] uppercase text-zinc-950">AURA</span>
+                  <span className="px-1.5 py-0.2 rounded bg-[#FAF7F2] text-[#8C7355] text-[9px] font-bold tracking-wider uppercase border border-[#E8E2D8]">Portal</span>
                 </div>
-                <p className="text-[11px] text-zinc-500 font-normal">
-                  Haute Parfumerie Control Suite
-                </p>
+                <p className="text-[10px] text-zinc-400 font-mono tracking-wider">HAUTE PARFUMERIE</p>
               </div>
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/"
-              target="_blank"
-              className="px-3.5 sm:px-4 py-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-xs font-bold tracking-wider uppercase text-zinc-700 hover:text-zinc-950 transition-colors flex items-center gap-1.5"
-            >
-              <span>View Storefront</span>
-              <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
-            </Link>
+          {/* Live System Indicator */}
+          <div className="px-5 py-2.5 bg-[#FAF9F7] border-b border-zinc-100 flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-medium text-zinc-700">Live Boutique System</span>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400">v2.4</span>
+          </div>
 
+          {/* Grouped Navigation Links */}
+          <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
+            {navGroups.map((group) => (
+              <div key={group.title} className="space-y-1">
+                <span className="px-3 text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-400 block mb-1.5">
+                  {group.title}
+                </span>
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id as any)}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                          isActive
+                            ? "bg-zinc-950 text-white shadow-sm"
+                            : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`w-4 h-4 ${isActive ? "text-[#C5A880]" : "text-zinc-400"}`} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                              isActive ? "bg-white/20 text-white border-white/20" : item.badgeColor
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Profile & Actions */}
+        <div className="p-4 border-t border-zinc-100 bg-[#FAF9F7] space-y-2 shrink-0">
+          <Link
+            href="/"
+            target="_blank"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-zinc-200 text-xs font-bold text-zinc-700 hover:text-zinc-950 hover:border-zinc-400 transition-colors shadow-2xs"
+          >
+            <span className="flex items-center gap-2">
+              <ExternalLink className="w-3.5 h-3.5 text-[#8C7355]" />
+              <span>View Storefront</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-400 uppercase">Live ↗</span>
+          </Link>
+
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-zinc-950 text-white text-xs font-bold flex items-center justify-center">
+                M
+              </div>
+              <div>
+                <p className="text-xs font-bold text-zinc-900 leading-tight">Muzammil</p>
+                <p className="text-[10px] text-zinc-400">Founder & Director</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* 3. MAIN WORKSPACE AREA */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+        
+        {/* Sticky Modern Top Action Bar */}
+        <header className="sticky top-0 z-30 bg-[#F7F7F4]/90 backdrop-blur-md border-b border-zinc-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            {/* Mobile Sidebar Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 transition-colors"
+              aria-label="Open Navigation Sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div>
+              <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold tracking-widest uppercase text-zinc-400">
+                <span>Portal</span>
+                <ChevronRight className="w-3 h-3 text-zinc-300" />
+                <span className="text-[#8C7355]">{getActiveTabInfo().title}</span>
+              </div>
+              <h1 className="font-serif text-lg sm:text-2xl font-light text-zinc-950 leading-tight">
+                {getActiveTabInfo().title}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick Add Flacon Button */}
             <button
               onClick={() => {
                 setEditingProduct(createNewProductTemplate());
                 setIsAddMode(true);
               }}
-              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-2 shadow-sm"
+              className="px-3.5 sm:px-4 py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 shadow-sm"
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Flacon</span>
+              <Plus className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span className="hidden sm:inline">Add Flacon</span>
             </button>
 
+            {/* Quick New Promo Button */}
+            <button
+              onClick={() => setIsCouponModalOpen(true)}
+              className="px-3 sm:px-3.5 py-2 rounded-lg bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-bold tracking-wider uppercase transition-colors hidden md:flex items-center gap-1.5"
+            >
+              <Tag className="w-3.5 h-3.5 text-[#8C7355]" />
+              <span>New Promo</span>
+            </button>
+
+            {/* Storefront Link */}
+            <Link
+              href="/"
+              target="_blank"
+              className="p-2 sm:px-3 sm:py-2 rounded-lg bg-white hover:bg-zinc-100 border border-zinc-200 text-zinc-700 hover:text-zinc-950 text-xs font-bold uppercase transition-colors flex items-center gap-1.5"
+              title="View Storefront"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-500" />
+              <span className="hidden sm:inline">Store</span>
+            </Link>
+
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="p-2 sm:px-3 sm:py-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-xs font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5"
-              title="Sign out of Admin Portal"
+              className="p-2 rounded-lg bg-white hover:bg-rose-50 border border-zinc-200 text-zinc-500 hover:text-rose-600 transition-colors"
+              title="Sign Out of Portal"
             >
-              <LogOut className="w-3.5 h-3.5 text-rose-700" />
-              <span className="hidden sm:inline">Sign Out</span>
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
+        </header>
 
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        
-        {/* Navigation Tabs Bar */}
-        <div className="flex border-b border-zinc-200 mb-8 overflow-x-auto no-scrollbar gap-1 sm:gap-2">
-          {[
-            { id: "overview", label: "Executive Analytics", icon: TrendingUp },
-            { id: "products", label: `Perfumes & Flacons (${products.length})`, icon: Layers },
-            { id: "orders", label: `Client Orders (${orders.length})`, icon: Package, badge: pendingOrdersCount > 0 ? pendingOrdersCount : null },
-            { id: "coupons", label: `Promo & Coupons (${coupons.length})`, icon: Tag },
-            { id: "reviews", label: `Patron Reviews (${adminReviews.length})`, icon: Star },
-            { id: "content", label: "Story & Details CMS", icon: Sparkles },
-            { id: "settings", label: "Store Controls & WhatsApp", icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 pb-3.5 px-3 sm:px-4 text-xs font-bold tracking-[0.16em] uppercase transition-colors relative whitespace-nowrap ${
-                  isActive ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-800"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-[#8C7355]" : "text-zinc-400"}`} />
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold flex items-center justify-center">
-                    {tab.badge}
-                  </span>
-                )}
-                {isActive && (
-                  <motion.div
-                    layoutId="adminActiveTab"
-                    className="absolute bottom-0 inset-x-0 h-0.5 bg-zinc-950"
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {/* Main Content Workspace */}
+        <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">
 
         {/* ============================================================== */}
         {/* TAB 1: EXECUTIVE ANALYTICS                                     */}
@@ -2191,7 +2496,8 @@ export default function AdminDashboardClient({
           </div>
         )}
 
-      </main>
+        </main>
+      </div>
 
       {/* ============================================================== */}
       {/* MODAL 1: FLACON EDITOR (CLEAN LIGHT DESIGN)                    */}
