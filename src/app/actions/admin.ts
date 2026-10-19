@@ -17,8 +17,6 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "muzamilateeq423@gmail.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Muzamil@aura";
 const ADMIN_SESSION_COOKIE = "aura_admin_session";
 const SESSION_TOKEN = "aura_auth_verified_session_token_2026";
 
@@ -26,9 +24,31 @@ export async function loginAdminAction(formData: { email: string; password: stri
   try {
     const { email, password } = formData;
     const cleanEmail = (email || "").trim().toLowerCase();
-    const cleanTargetEmail = ADMIN_EMAIL.trim().toLowerCase();
+    const envEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase().replace(/^["']|["']$/g, "");
+    
+    // Valid authorized admin emails
+    const validEmails = [
+      "muzamilateeq423@gmail.com",
+      envEmail
+    ].filter(Boolean);
 
-    if (cleanEmail === cleanTargetEmail && password === ADMIN_PASSWORD) {
+    // Clean and normalize passwords
+    const cleanInputPass = (password || "").trim();
+    const envPass = (process.env.ADMIN_PASSWORD || "").trim().replace(/^["']|["']$/g, "");
+
+    // Valid authorized admin passwords (supports both Muzamil@aura and Muzamil@001%$)
+    const validPasswords = [
+      "Muzamil@aura",
+      "Muzamil@001%$",
+      envPass
+    ].filter(Boolean);
+
+    const isEmailValid = validEmails.includes(cleanEmail);
+    const isPasswordValid = 
+      validPasswords.includes(password) || 
+      validPasswords.includes(cleanInputPass);
+
+    if (isEmailValid && isPasswordValid) {
       const cookieStore = await cookies();
       cookieStore.set(ADMIN_SESSION_COOKIE, SESSION_TOKEN, {
         httpOnly: true,
