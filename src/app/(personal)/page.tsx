@@ -280,6 +280,93 @@ export default function LuxuryBrandStorefront() {
         </div>
       </section>
 
+      {/* 4.5. THE AI SIGNATURE SCRIBE VIP ATTRACTION BANNER */}
+      <section className="py-10 sm:py-14 bg-gradient-to-r from-[#121214] via-[#18181B] to-[#202024] text-white px-4 sm:px-6 relative overflow-hidden border-y border-[#C5A880]/30 shadow-2xl">
+        {/* Subtle Background Watermark */}
+        <div className="absolute -right-8 -bottom-10 opacity-5 pointer-events-none select-none text-[#C5A880] hidden md:block">
+          <span className="font-serif text-[180px] leading-none">AURA</span>
+        </div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          {/* Left Column: Headline & Callout */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#C5A880]/20 border border-[#C5A880]/40 rounded-full text-[#C5A880] text-[10px] sm:text-[11px] font-bold tracking-[0.22em] uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+              World-First AI Olfactory Scribe
+            </div>
+
+            <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light tracking-tight text-white leading-tight">
+              Find Your Perfume With <span className="italic text-[#C5A880] font-normal">Your Signature</span>
+            </h2>
+
+            <p className="text-zinc-300 font-light text-xs sm:text-base leading-relaxed max-w-xl">
+              Don&apos;t guess your fragrance through a screen. Sign your name or draw your moniker on our digital parchment. Our master perfumer algorithm analyzes your stroke pressure to reveal your 98% soulmate flacon—with complimentary custom bottle engraving.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <Link
+                href="/signature-scent"
+                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-[#C5A880] hover:bg-[#d6bc97] text-zinc-950 rounded-xl text-xs sm:text-sm font-bold tracking-[0.2em] uppercase transition-all shadow-xl flex items-center gap-2.5 group cursor-pointer"
+              >
+                <span>Sign Your Name & Reveal Scent</span>
+                <ArrowRight className="w-4 h-4 text-zinc-950 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              
+              <span className="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                100% Free • Takes 30 Seconds
+              </span>
+            </div>
+          </div>
+
+          {/* Right Column: Visual Interactive Teaser Card */}
+          <div className="lg:col-span-5">
+            <Link
+              href="/signature-scent"
+              className="group block relative p-6 sm:p-7 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-[#C5A880]/40 rounded-2xl transition-all duration-300 hover:scale-[1.02] shadow-2xl overflow-hidden cursor-pointer"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-xs">
+                <span className="font-mono text-[#C5A880] tracking-widest uppercase text-[10px] font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
+                  Live Scribe Pad
+                </span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 bg-white/10 px-2 py-0.5 rounded">
+                  Touch / Mouse
+                </span>
+              </div>
+
+              {/* Simulated Signature & Wax Seal */}
+              <div className="py-5 sm:py-6 flex items-center justify-between gap-4">
+                <div className="space-y-2">
+                  <p className="font-serif italic text-2xl sm:text-3xl text-[#C5A880] drop-shadow-sm font-light">
+                    Muzammil Ateeq
+                  </p>
+                  <div className="h-0.5 w-32 bg-gradient-to-r from-[#C5A880] to-transparent" />
+                  <p className="text-[10px] text-zinc-400 font-mono">
+                    Analysis: The Sovereign • 98% Match
+                  </p>
+                </div>
+
+                {/* Golden Wax Seal Monogram */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-[#8C7355] via-[#C5A880] to-[#E9DCC9] border-2 border-white/30 shadow-xl flex flex-col items-center justify-center text-zinc-950 shrink-0 group-hover:rotate-12 transition-transform">
+                  <span className="font-serif text-sm sm:text-base font-bold">AURA</span>
+                  <span className="text-[7px] font-bold tracking-wider uppercase text-zinc-900">SEAL</span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-300">
+                <span className="text-[11px] text-zinc-400">Click to sign on digital parchment</span>
+                <span className="text-[#C5A880] font-bold tracking-wider uppercase flex items-center gap-1 group-hover:underline text-[11px]">
+                  Open Pad <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
       {/* 5. SIGNATURE COLLECTION WITH OLFACTORY FILTER */}
       <section id="collection" className="py-12 sm:py-24 max-w-7xl mx-auto px-3 sm:px-6">
         

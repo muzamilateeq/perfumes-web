@@ -115,6 +115,13 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
                 The House
               </Link>
               <Link 
+                href="/signature-scent" 
+                className="text-xs font-bold tracking-[0.16em] uppercase text-[#8C7355] hover:text-zinc-950 transition-all whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/35 hover:border-[#C5A880] shadow-2xs group"
+              >
+                <Sparkles className="w-3 h-3 text-[#C5A880] group-hover:rotate-12 transition-transform" />
+                <span>Signature Match</span>
+              </Link>
+              <Link 
                 href="/track-order" 
                 className="hidden xl:flex items-center gap-1.5 text-xs font-bold tracking-[0.18em] uppercase text-zinc-600 hover:text-zinc-950 transition-colors whitespace-nowrap"
               >
@@ -293,6 +300,23 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-zinc-400" />
+                  </Link>
+
+                  <Link
+                    href="/signature-scent"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-3 px-3 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-lg text-xs font-bold tracking-[0.18em] uppercase text-zinc-950 mb-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#C5A880]" />
+                      <div>
+                        <span>AI Signature Match</span>
+                        <span className="block text-[9px] font-medium text-[#8C7355] normal-case mt-0.5">
+                          Sign your name • Reveal soulmate flacon
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#8C7355]" />
                   </Link>
 
                   <Link
