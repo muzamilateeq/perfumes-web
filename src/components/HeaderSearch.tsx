@@ -76,8 +76,8 @@ export default function HeaderSearch({ className = "" }: HeaderSearchProps) {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search perfumes (Oud, Rose, Citrus)..."
-          className="w-full sm:w-36 md:w-40 lg:w-44 xl:w-56 focus:w-full sm:focus:w-48 md:focus:w-52 lg:focus:w-60 py-2 pr-7 text-sm sm:text-xs bg-transparent text-zinc-900 placeholder:text-zinc-400 placeholder:font-light focus:outline-none transition-all duration-300"
+          placeholder="Search perfumes..."
+          className="w-full sm:w-32 md:w-36 lg:w-36 xl:w-44 2xl:w-56 focus:w-full sm:focus:w-44 md:focus:w-48 lg:focus:w-52 xl:focus:w-60 py-2 pr-7 text-sm sm:text-xs bg-transparent text-zinc-900 placeholder:text-zinc-400 placeholder:font-light focus:outline-none transition-all duration-300"
         />
 
         {query && (
