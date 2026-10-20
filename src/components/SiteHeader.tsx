@@ -143,16 +143,6 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
               <HeaderSearch />
             </div>
 
-            {/* Quick Track Icon */}
-            <Link
-              href="/track-order"
-              className="hidden md:flex p-2 text-zinc-700 hover:text-zinc-950 transition-colors items-center justify-center rounded-full hover:bg-zinc-100 shrink-0"
-              title="Track Order"
-              aria-label="Track Order"
-            >
-              <Truck className="w-4 h-4 text-[#8C7355]" />
-            </Link>
-
             <a 
               href={whatsappUrl}
               target="_blank" 

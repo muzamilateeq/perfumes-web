@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { 
   MessageCircle, 
   X, 
@@ -10,7 +11,8 @@ import {
   Clock, 
   Search, 
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Truck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -77,13 +79,25 @@ export default function WhatsAppConcierge({
 
   return (
     <>
-      {/* Floating Action Button */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
+      {/* Floating Action Buttons: Track Order & WhatsApp Concierge */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 sm:gap-2.5">
+        
+        {/* Floating Track Order Button */}
+        <Link
+          href="/track-order"
+          className="group px-3.5 py-2.5 sm:px-4 sm:py-3.5 rounded-full bg-zinc-950/95 hover:bg-zinc-900 text-white backdrop-blur-md border border-zinc-800 hover:border-[#C5A880]/60 shadow-2xl flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-all hover:scale-105"
+          title="Track Your Order Status"
+        >
+          <Truck className="w-4 h-4 text-[#C5A880] group-hover:translate-x-0.5 transition-transform" />
+          <span className="text-[11px] font-bold tracking-wider">Track Order</span>
+        </Link>
+
+        {/* WhatsApp Concierge Button */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative bg-emerald-700 hover:bg-emerald-600 text-white p-3 sm:p-4 rounded-full shadow-2xl flex items-center gap-2.5 transition-all border border-emerald-500/40"
+          className="relative bg-emerald-700 hover:bg-emerald-600 text-white p-3 sm:p-3.5 rounded-full shadow-2xl flex items-center gap-2 transition-all border border-emerald-500/40"
           aria-label="Open WhatsApp Concierge"
         >
           {/* Pulsing Online Indicator */}
@@ -92,9 +106,9 @@ export default function WhatsAppConcierge({
             <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-zinc-950"></span>
           </span>
 
-          <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-          <span className="text-xs font-bold tracking-widest uppercase hidden sm:inline-block pr-1">
-            WhatsApp Concierge
+          <MessageCircle className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+          <span className="text-xs font-bold tracking-widest uppercase hidden md:inline-block pr-1">
+            WhatsApp
           </span>
         </motion.button>
       </div>
@@ -219,6 +233,22 @@ export default function WhatsAppConcierge({
                     </div>
                     <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-1 transition-transform" />
                   </button>
+
+                  {/* Direct Link to Live Parcel Tracker */}
+                  <Link
+                    href="/track-order"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full p-3 bg-zinc-950 hover:bg-zinc-900 text-white rounded-xl transition-all flex items-center justify-between group shadow-xs border border-zinc-800"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Truck className="w-4 h-4 text-[#C5A880] shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold tracking-wider uppercase text-white">Live Courier Tracking</p>
+                        <p className="text-[10px] text-zinc-400 font-light">Track parcel via Trax, TCS or Order #</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-[#C5A880] group-hover:translate-x-1 transition-transform" />
+                  </Link>
 
                   <button
                     onClick={() => setShowTrackingInput(!showTrackingInput)}
