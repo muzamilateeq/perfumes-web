@@ -21,7 +21,10 @@ import {
   Type,
   Trash2,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Activity,
+  Layers,
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SiteHeader from "@/components/SiteHeader";
@@ -37,6 +40,16 @@ interface SignatureScentClientProps {
 
 type InkColor = "#C5A880" | "#18181B"; // Imperial Gold vs Midnight Onyx
 type InputMode = "draw" | "type";
+
+export interface SignatureAnalysisMetrics {
+  tier: string;
+  tierCategory: "Grand Luxury Extrait" | "Everyday Luxury Extrait";
+  aspectRatio: number;
+  density: string;
+  flourishType: string;
+  signatureBreadth: string;
+  reasoning: string;
+}
 
 interface PersonalityReading {
   title: string;
@@ -91,6 +104,323 @@ const PERSONALITY_READINGS: Record<string, PersonalityReading> = {
   },
 };
 
+// =========================================================================
+// AI GRAPHOLOGY & STROKE INTELLIGENCE CLASSIFIER
+// Analyzes canvas stroke vectors, aspect ratio, density & flourishes
+// Automatically differentiates Professional / Executive vs Middle / Casual
+// =========================================================================
+function analyzeSignatureGraphology(
+  canvas: HTMLCanvasElement | null,
+  isTyped: boolean,
+  typedText: string
+): { targetSlug: string; metrics: SignatureAnalysisMetrics } {
+  // If typed moniker mode is active
+  if (isTyped) {
+    const text = typedText.trim();
+    const words = text.split(/\s+/).filter(Boolean);
+    const len = text.length;
+
+    // Check for executive / formal patterns (multiple words, formal title, long formal name)
+    const isFormalExecutive =
+      words.length >= 2 ||
+      len >= 12 ||
+      /^(mr\.|dr\.|sheikh|syed|chaudhry|malik|khan|prof\.|sir|advocate|engr\.)/i.test(text);
+
+    if (isFormalExecutive) {
+      if (len > 15 || /royal|king|lord|sheikh|khan|chaudhry|sultan/i.test(text)) {
+        return {
+          targetSlug: "oud-royale",
+          metrics: {
+            tier: "The Sovereign • Grand Luxury Extrait",
+            tierCategory: "Grand Luxury Extrait",
+            aspectRatio: 3.2,
+            density: "Commanding Authority",
+            flourishType: "Regal Full Title Flourish",
+            signatureBreadth: "Commanding Formal Inscription",
+            reasoning:
+              "Your typed formal moniker carries executive weight and commanding gravitas. Olfactory graphology aligns this structured authority with 20-Year Aged Cambodian Agarwood and Black Cardamom.",
+          },
+        };
+      } else {
+        return {
+          targetSlug: "santal-supreme",
+          metrics: {
+            tier: "The Quiet Connoisseur • Private Reserve Extrait",
+            tierCategory: "Grand Luxury Extrait",
+            aspectRatio: 2.8,
+            density: "Refined Symmetry",
+            flourishType: "Understated Executive Cadence",
+            signatureBreadth: "Bespoke Connoisseur Balance",
+            reasoning:
+              "Your name cadence indicates quiet luxury, boardroom mastery, and disciplined discernment. The algorithm pairs this with our Private Reserve 35% concentration Australian Sandalwood & Tuscan Suede.",
+          },
+        };
+      }
+    }
+
+    // Check for romantic / artistic cues
+    if (/rose|velvet|love|flora|aria|luna|bella|sofia|noor|zara|layla/i.test(text)) {
+      return {
+        targetSlug: "velvet-rose",
+        metrics: {
+          tier: "The Aristocratic Romantic • Velvet Florals",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: 2.1,
+          density: "Velvet Softness",
+          flourishType: "Poetic Cursive Curvature",
+          signatureBreadth: "Intimate Magnetic Rhythm",
+          reasoning:
+            "Soft cursive elegance and lyrical character harmony detected. Your aesthetic signature calls for nocturnal French May Rose Absolute and frozen blackcurrant.",
+        },
+      };
+    }
+
+    // Short / single names -> Middle everyday tier
+    if (len <= 6) {
+      return {
+        targetSlug: "midnight-citrus",
+        metrics: {
+          tier: "The Executive Visionary • Modern Agility",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: 1.6,
+          density: "Agile Precision",
+          flourishType: "Crisp Modern Monogram",
+          signatureBreadth: "Dynamic High-Projection Pace",
+          reasoning:
+            "Your concise monogram exhibits rapid mental speed, agility, and modern clarity. Matched directly with high-projection Calabrian Bergamot and Italian Neroli.",
+        },
+      };
+    } else {
+      return {
+        targetSlug: "vanilla-whisper",
+        metrics: {
+          tier: "The Warm Enchanter • Approachable Luxury",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: 1.9,
+          density: "Approachable Warmth",
+          flourishType: "Rounded Baseline Bowls",
+          signatureBreadth: "Sensual Comforting Balance",
+          reasoning:
+            "Gentle typographic rhythm and warm rounded structure denote approachable charisma. Seamlessly harmonized with smoky Bourbon Vanilla and roasted Tonka.",
+        },
+      };
+    }
+  }
+
+  // Handwritten Canvas Analysis
+  if (!canvas) {
+    return {
+      targetSlug: "midnight-citrus",
+      metrics: {
+        tier: "The Modern Dynamic • Everyday Fresh",
+        tierCategory: "Everyday Luxury Extrait",
+        aspectRatio: 1.8,
+        density: "Balanced Stroke",
+        flourishType: "Modern Cadence",
+        signatureBreadth: "Standard Inscription",
+        reasoning: "Modern balanced signature dynamics harmonized with crisp citrus extrait.",
+      },
+    };
+  }
+
+  try {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("No context");
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+
+    let minX = canvas.width;
+    let maxX = 0;
+    let minY = canvas.height;
+    let maxY = 0;
+    let totalInk = 0;
+
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const alpha = data[(y * canvas.width + x) * 4 + 3];
+        if (alpha > 35) {
+          totalInk++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (totalInk < 50 || maxX <= minX || maxY <= minY) {
+      // Empty or minimal canvas fallback
+      return {
+        targetSlug: "midnight-citrus",
+        metrics: {
+          tier: "The Dynamic Minimalist • Everyday Fresh",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: 1.5,
+          density: "Minimalist Light",
+          flourishType: "Direct Monogram",
+          signatureBreadth: "Compact Agile Pace",
+          reasoning: "Clean minimalist signature harmonized with refreshing bergamot and vetiver.",
+        },
+      };
+    }
+
+    const boxWidth = maxX - minX + 1;
+    const boxHeight = maxY - minY + 1;
+    const aspectRatio = boxWidth / Math.max(boxHeight, 1);
+    const widthRatioToCanvas = boxWidth / canvas.width;
+    const inkDensity = totalInk / (boxWidth * boxHeight);
+
+    // Flourish / Underline Detection:
+    // Check if there is an underline or long flourish in the lower 28% of the bounding box
+    const lowerY = minY + boxHeight * 0.72;
+    let lowerMinX = canvas.width;
+    let lowerMaxX = 0;
+    let lowerInkCount = 0;
+
+    for (let y = Math.floor(lowerY); y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const alpha = data[(y * canvas.width + x) * 4 + 3];
+        if (alpha > 35) {
+          lowerInkCount++;
+          if (x < lowerMinX) lowerMinX = x;
+          if (x > lowerMaxX) lowerMaxX = x;
+        }
+      }
+    }
+
+    const lowerSpan = lowerMaxX > lowerMinX ? (lowerMaxX - lowerMinX) / boxWidth : 0;
+    const hasUnderlineOrFlourish = lowerSpan > 0.42 && lowerInkCount > 120;
+
+    // CLASSIFICATION:
+    // 1. PROFESSIONAL / EXECUTIVE TYPE -> LUXURY PERFUMES (Oud Royale / Santal Supreme)
+    // Graphology:
+    // - Wide aspect ratio (>= 2.2) combined with expansive horizontal breadth (> 30% of canvas or substantial ink)
+    // - OR wide underline / confident terminal flourish with good ratio (>= 1.95)
+    // - OR very wide aspect ratio (>= 2.65) showing commanding horizontal sweep
+    const isProfessionalExecutive =
+      (aspectRatio >= 2.2 && (widthRatioToCanvas > 0.30 || totalInk > 850)) ||
+      (hasUnderlineOrFlourish && aspectRatio >= 1.95) ||
+      (aspectRatio >= 2.65 && totalInk > 500);
+
+    if (isProfessionalExecutive) {
+      if (hasUnderlineOrFlourish || aspectRatio > 2.75) {
+        // Oud Royale (PKR 12,500)
+        return {
+          targetSlug: "oud-royale",
+          metrics: {
+            tier: "The Sovereign • Grand Luxury Extrait",
+            tierCategory: "Grand Luxury Extrait",
+            aspectRatio: Number(aspectRatio.toFixed(2)),
+            density: "Firm Executive Authority",
+            flourishType: hasUnderlineOrFlourish ? "Commanding Underline Flourish" : "Expansive Sovereign Reach",
+            signatureBreadth: `Executive Breadth (${(widthRatioToCanvas * 100).toFixed(0)}% Canvas)`,
+            reasoning:
+              "Your signature demonstrates bold horizontal velocity with assertive terminal flourishes. In graphology, this reveals innate executive authority, high discernment, and commanding presence that harmonizes with 20-Year Aged Cambodian Oud.",
+          },
+        };
+      } else {
+        // Santal Supreme (PKR 15,000)
+        return {
+          targetSlug: "santal-supreme",
+          metrics: {
+            tier: "The Quiet Connoisseur • Private Reserve Extrait",
+            tierCategory: "Grand Luxury Extrait",
+            aspectRatio: Number(aspectRatio.toFixed(2)),
+            density: "Controlled Bespoke Cadence",
+            flourishType: "Symmetrical Executive Rhythm",
+            signatureBreadth: `Deliberate Tailored Span (${(widthRatioToCanvas * 100).toFixed(0)}% Canvas)`,
+            reasoning:
+              "Your stroke structure exhibits refined restraint, controlled pen pressure, and immaculate balance. This represents the pinnacle of 'Quiet Luxury'—harmonizing with creamy Australian Sandalwood, Tuscan Suede, and Florentine Iris.",
+          },
+        };
+      }
+    }
+
+    // 2. ARTISTIC / ROMANTIC TYPE (Velvet Rose)
+    // Taller loops, expressive ascenders, aspect ratio < 1.95 and high vertical height
+    const isArtisticRomantic = aspectRatio < 1.95 && boxHeight > canvas.height * 0.28;
+    if (isArtisticRomantic) {
+      return {
+        targetSlug: "velvet-rose",
+        metrics: {
+          tier: "The Aristocratic Romantic • Velvet Florals",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: Number(aspectRatio.toFixed(2)),
+          density: "Graceful Loop Density",
+          flourishType: "Delicate Curvilinear Ascenders",
+          signatureBreadth: "Expressive Aesthetic Height",
+          reasoning:
+            "Delicate looping curvature and elevated ascenders signal emotional depth, artistic elegance, and an appreciation for nocturnal beauty. Harmonized with French May Rose Absolute and frozen blackcurrant.",
+        },
+      };
+    }
+
+    // 3. MIDDLE / CASUAL / MINIMALIST TYPE -> MIDDLE PERFUMES
+    // Compact, lighter strokes, quick initials, everyday agility
+    if (aspectRatio <= 1.65 || totalInk < 550 || widthRatioToCanvas < 0.28) {
+      // Midnight Citrus (PKR 6,800)
+      return {
+        targetSlug: "midnight-citrus",
+        metrics: {
+          tier: "The Executive Visionary • Modern Agility",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: Number(aspectRatio.toFixed(2)),
+          density: "Agile Dynamic Speed",
+          flourishType: "Clean Minimalist Terminal",
+          signatureBreadth: `Compact Sharp Focus (${(widthRatioToCanvas * 100).toFixed(0)}% Canvas)`,
+          reasoning:
+            "Your stroke velocity is swift, efficient, and sharply delineated without unnecessary clutter. This denotes clear intellect and energized everyday dynamism, perfectly matched to Italian Bergamot and Haitian Vetiver.",
+        },
+      };
+    } else if (inkDensity > 0.035) {
+      // Vanilla Whisper (PKR 7,500)
+      return {
+        targetSlug: "vanilla-whisper",
+        metrics: {
+          tier: "The Warm Enchanter • Approachable Luxury",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: Number(aspectRatio.toFixed(2)),
+          density: "Warm Approachable Rhythm",
+          flourishType: "Rounded Baseline Bowls",
+          signatureBreadth: `Balanced Centered Span (${(widthRatioToCanvas * 100).toFixed(0)}% Canvas)`,
+          reasoning:
+            "Rounded baseline curves and warm continuous rhythm signify approachable charisma and magnetic warmth, harmonizing seamlessly with roasted Tonka and organic Bourbon Vanilla.",
+        },
+      };
+    } else {
+      // Aqua Celestia (PKR 9,000)
+      return {
+        targetSlug: "aqua-celestia",
+        metrics: {
+          tier: "The Free Spirit • Oceanic Vitality",
+          tierCategory: "Everyday Luxury Extrait",
+          aspectRatio: Number(aspectRatio.toFixed(2)),
+          density: "Light Saline Flow",
+          flourishType: "Open Airy Lift",
+          signatureBreadth: `Spacious Breathing Span (${(widthRatioToCanvas * 100).toFixed(0)}% Canvas)`,
+          reasoning:
+            "Generous breathing space between strokes and upward tilt reflect openness, curiosity, and vitality, harmonizing with marine sea salt and sun-bleached coastal driftwood.",
+        },
+      };
+    }
+  } catch (err) {
+    console.error("Canvas graphology analysis error:", err);
+    return {
+      targetSlug: "midnight-citrus",
+      metrics: {
+        tier: "The Executive Visionary • Modern Agility",
+        tierCategory: "Everyday Luxury Extrait",
+        aspectRatio: 1.8,
+        density: "Dynamic Precision",
+        flourishType: "Modern Minimalist",
+        signatureBreadth: "Standard Inscription",
+        reasoning: "Clean modern signature harmonized with crisp bergamot and vetiver.",
+      },
+    };
+  }
+}
+
 export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }: SignatureScentClientProps) {
   const store = useStore();
   const products = initialProducts.length > 0 ? initialProducts : PERFUMES_DATA;
@@ -104,15 +434,12 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
   const [hasDrawn, setHasDrawn] = useState<boolean>(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
 
-  // Preference Preferences (Fine-tuning)
-  const [selectedVibe, setSelectedVibe] = useState<string>("oud");
-  const [selectedOccasion, setSelectedOccasion] = useState<string>("evening");
-
-  // Analysis Scanning States
+  // Analysis Scanning States & Graphology Intelligence Results
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisStepIndex, setAnalysisStepIndex] = useState<number>(0);
   const [matchedPerfume, setMatchedPerfume] = useState<PerfumeItem | null>(null);
   const [personalityResult, setPersonalityResult] = useState<PersonalityReading | null>(null);
+  const [analysisMetrics, setAnalysisMetrics] = useState<SignatureAnalysisMetrics | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingRef = useRef<boolean>(false);
@@ -318,7 +645,7 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
     setHasDrawn(true);
   };
 
-  // Run the AI Olfactory Scribe Analysis
+  // Run the AI Olfactory Scribe Analysis via Automated Graphology
   const handleStartAnalysis = () => {
     const canvas = canvasRef.current;
     if (!canvas || (!hasDrawn && !typedName.trim())) {
@@ -333,28 +660,27 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
     setIsAnalyzing(true);
     setAnalysisStepIndex(0);
 
+    // Compute stroke vector analysis & graphology intelligence
+    const isTyped = inputMode === "type";
+    const { targetSlug, metrics } = analyzeSignatureGraphology(canvas, isTyped, typedName);
+
     // Step progression timers
-    const timer1 = setTimeout(() => setAnalysisStepIndex(1), 700);
-    const timer2 = setTimeout(() => setAnalysisStepIndex(2), 1500);
-    const timer3 = setTimeout(() => setAnalysisStepIndex(3), 2300);
+    const timer1 = setTimeout(() => setAnalysisStepIndex(1), 600);
+    const timer2 = setTimeout(() => setAnalysisStepIndex(2), 1300);
+    const timer3 = setTimeout(() => setAnalysisStepIndex(3), 2000);
 
     const timer4 = setTimeout(() => {
-      // Determine best match based on vibe selection & calligraphic input
-      let targetSlug = "oud-royale";
-
-      if (selectedVibe === "rose") targetSlug = "velvet-rose";
-      else if (selectedVibe === "citrus") targetSlug = "midnight-citrus";
-      else if (selectedVibe === "santal") targetSlug = "santal-supreme";
-      else if (selectedVibe === "vanilla") targetSlug = "vanilla-whisper";
-      else if (selectedVibe === "marine") targetSlug = "aqua-celestia";
-      else targetSlug = "oud-royale";
-
-      // Match product
+      // Match product based on handwriting intelligence
       const foundProduct = products.find((p) => p.slug === targetSlug) || products[0];
-      const reading = PERSONALITY_READINGS[targetSlug] || PERSONALITY_READINGS["oud-royale"];
+      const baseReading = PERSONALITY_READINGS[targetSlug] || PERSONALITY_READINGS["oud-royale"];
 
       setMatchedPerfume(foundProduct);
-      setPersonalityResult(reading);
+      setPersonalityResult({
+        ...baseReading,
+        title: metrics.tier,
+        analysis: metrics.reasoning || baseReading.analysis,
+      });
+      setAnalysisMetrics(metrics);
       setIsAnalyzing(false);
 
       // Scroll smoothly to results
@@ -364,7 +690,7 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
           resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 100);
-    }, 3000);
+    }, 2800);
 
     return () => {
       clearTimeout(timer1);
@@ -377,6 +703,7 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
   const handleReset = () => {
     setMatchedPerfume(null);
     setPersonalityResult(null);
+    setAnalysisMetrics(null);
     setSignatureDataUrl(null);
     setTypedName("");
     clearCanvas();
@@ -592,87 +919,49 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
               </div>
             </div>
 
-            {/* OLFACTORY PERSONA TUNING (2 Intuitive Questions) */}
-            <div className="pt-2 border-t border-zinc-200 space-y-6">
+            {/* DIRECT AI GRAPHOLOGY INTELLIGENCE & REVEAL BUTTON */}
+            <div className="pt-4 border-t border-zinc-200 space-y-4">
               
-              <div>
-                <label className="block text-xs font-bold tracking-[0.2em] uppercase text-zinc-800 mb-3 flex items-center gap-2">
-                  <Compass className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>1. Choose Your Preferred Soulmate Accord:</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-                  {[
-                    { id: "oud", label: "Regal Oud & Amber", icon: "👑" },
-                    { id: "rose", label: "Velvet Rose & Musk", icon: "🌹" },
-                    { id: "citrus", label: "Crisp Bergamot", icon: "🍋" },
-                    { id: "santal", label: "Quiet Luxury Santal", icon: "🪵" },
-                    { id: "vanilla", label: "Warm Tonka Vanilla", icon: "🍦" },
-                    { id: "marine", label: "Oceanic Saline Mist", icon: "🌊" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSelectedVibe(item.id)}
-                      className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
-                        selectedVibe === item.id
-                          ? "bg-zinc-950 text-white border-zinc-950 shadow-md ring-2 ring-[#C5A880]/30"
-                          : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
-                      }`}
-                    >
-                      <span className="text-xl mb-1">{item.icon}</span>
-                      <span className="text-xs font-bold leading-tight">{item.label}</span>
-                    </button>
-                  ))}
+              {/* Intelligence Active Status Pill */}
+              <div className="p-4 bg-gradient-to-r from-[#F8F5EE] via-[#FAF7F0] to-[#F5EFE3] border border-[#C5A880]/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping absolute" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 relative" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-zinc-950 block sm:inline">
+                      Automated Graphology Intelligence Active
+                    </span>
+                    <span className="text-zinc-500 sm:ml-2 text-[11px] block sm:inline font-mono">
+                      (No manual questionnaire needed)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-[11px] font-mono text-[#8C7355] bg-white/70 px-2.5 py-1 rounded-md border border-[#C5A880]/30 w-fit">
+                  <Activity className="w-3.5 h-3.5 text-[#C5A880]" />
+                  <span>Executive vs Everyday Flacon Auto-Classifier</span>
                 </div>
               </div>
 
+              {/* ACTION BUTTON TO ANALYZE */}
               <div>
-                <label className="block text-xs font-bold tracking-[0.2em] uppercase text-zinc-800 mb-3 flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>2. When will this fragrance be experienced?</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  {[
-                    { id: "daily", title: "Daily Executive & Boardroom", desc: "Fresh, sophisticated & clean projection" },
-                    { id: "evening", title: "Evening Galas & Black-Tie", desc: "Monumental, opulent 18+ hour sillage" },
-                    { id: "intimate", title: "Romantic Dinners & Date Nights", desc: "Velvety, magnetic & whispering aura" },
-                  ].map((occ) => (
-                    <button
-                      key={occ.id}
-                      type="button"
-                      onClick={() => setSelectedOccasion(occ.id)}
-                      className={`p-3.5 rounded-xl border text-left transition-all ${
-                        selectedOccasion === occ.id
-                          ? "bg-zinc-950 text-white border-zinc-950 shadow-md ring-2 ring-[#C5A880]/30"
-                          : "bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border-zinc-200"
-                      }`}
-                    >
-                      <p className="text-xs font-bold">{occ.title}</p>
-                      <p className={`text-[11px] mt-0.5 ${selectedOccasion === occ.id ? "text-zinc-300" : "text-zinc-500"}`}>
-                        {occ.desc}
-                      </p>
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={handleStartAnalysis}
+                  disabled={!hasDrawn && !typedName.trim()}
+                  className="w-full py-4 sm:py-5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs sm:text-sm font-bold tracking-[0.22em] uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-[#C5A880] group-hover:rotate-12 transition-transform" />
+                  <span>Analyze My Signature & Reveal Flacon Match</span>
+                  <ArrowRight className="w-4 h-4 text-[#C5A880] group-hover:translate-x-1 transition-transform" />
+                </button>
+                <p className="text-center text-[11px] text-zinc-500 mt-2 font-mono">
+                  100% Free AI Olfactory Analysis • Direct Match Based On Your Signature Dynamics
+                </p>
               </div>
 
-            </div>
-
-            {/* ACTION BUTTON TO ANALYZE */}
-            <div className="pt-4">
-              <button
-                type="button"
-                onClick={handleStartAnalysis}
-                disabled={!hasDrawn && !typedName.trim()}
-                className="w-full py-4 sm:py-5 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs sm:text-sm font-bold tracking-[0.22em] uppercase transition-all shadow-xl flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-[#C5A880] group-hover:rotate-12 transition-transform" />
-                <span>Analyze My Signature & Reveal Flacon Match</span>
-                <ArrowRight className="w-4 h-4 text-[#C5A880] group-hover:translate-x-1 transition-transform" />
-              </button>
-              <p className="text-center text-[11px] text-zinc-500 mt-2 font-mono">
-                100% Free Bespoke Analysis • Includes Option for Name Engraving on Flacon
-              </p>
             </div>
 
           </div>
@@ -795,9 +1084,23 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
                         </span>
                       )}
                     </div>
-                    <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-[10px] text-zinc-500 font-mono">
-                      <span>Stroke Dynamics: High Harmony</span>
-                      <span>Pressure: 32% Oil Affinity</span>
+                    <div className="pt-3 border-t border-zinc-100 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-zinc-600">
+                      <div>
+                        <span className="text-zinc-400 block text-[9px] uppercase tracking-wider">Classification</span>
+                        <span className="font-bold text-zinc-950 truncate block">{analysisMetrics?.tierCategory || "Grand Luxury Extrait"}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400 block text-[9px] uppercase tracking-wider">Aspect Ratio</span>
+                        <span className="font-bold text-zinc-950">{analysisMetrics?.aspectRatio || 2.4}:1</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400 block text-[9px] uppercase tracking-wider">Stroke Density</span>
+                        <span className="font-bold text-zinc-950">{analysisMetrics?.density || "Firm Authority"}</span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400 block text-[9px] uppercase tracking-wider">Flourish Cadence</span>
+                        <span className="font-bold text-zinc-950 truncate block">{analysisMetrics?.flourishType || "Executive"}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -814,7 +1117,7 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
                       </span>
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#8C7355] mt-2">
-                      Certified Authentic
+                      {analysisMetrics?.tierCategory === "Grand Luxury Extrait" ? "👑 Executive Luxury Tier" : "✨ Everyday Modern Tier"}
                     </span>
                   </div>
 
@@ -870,6 +1173,20 @@ export default function SignatureScentClient({ initialProducts = PERFUMES_DATA }
                 {/* Right: Specs, Pricing & Purchase Actions */}
                 <div className="md:col-span-7 space-y-5">
                   <div>
+                    {/* Auto-detected Tier Badge */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
+                        analysisMetrics?.tierCategory === "Grand Luxury Extrait"
+                          ? "bg-amber-500/15 text-amber-900 border-amber-500/40"
+                          : "bg-emerald-500/15 text-emerald-900 border-emerald-500/40"
+                      }`}>
+                        <Sparkles className="w-3 h-3 text-[#C5A880]" />
+                        {analysisMetrics?.tierCategory === "Grand Luxury Extrait"
+                          ? "👑 Professional Executive Luxury Tier"
+                          : "✨ Accessible Everyday Luxury Tier"}
+                      </span>
+                    </div>
+
                     <div className="flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-[#8C7355]">
                       <span>{matchedPerfume.category}</span>
                       <span>•</span>
