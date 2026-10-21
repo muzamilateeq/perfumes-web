@@ -67,7 +67,7 @@ export default function SiteHeader({ cartCount = 0, onOpenCart }: SiteHeaderProp
       {/* 1. TOP ANNOUNCEMENT TICKER */}
       <div className="bg-zinc-950 text-zinc-300 text-[10px] md:text-[11px] font-bold tracking-[0.16em] sm:tracking-[0.28em] uppercase py-2 sm:py-2.5 px-3 sm:px-6 border-b border-zinc-800 text-center flex items-center justify-center gap-3 sm:gap-8">
         <span className="flex items-center gap-1.5 sm:gap-2">
-          <Sparkles className="w-3 h-3 text-[#C5A880] shrink-0" /> COMPLIMENTARY EXPRESS DELIVERY NATIONWIDE
+          <Sparkles className="w-3 h-3 text-[#C5A880] shrink-0" /> EXPRESS COURIER DELIVERY NATIONWIDE
         </span>
         <span className="hidden sm:inline text-zinc-600">•</span>
         <span className="hidden sm:inline">CASH ON DELIVERY (COD)</span>

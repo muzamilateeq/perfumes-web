@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${perfume.name} — Extrait de Parfum (30%+ Oil) | Aura`,
-    description: `${perfume.name}: ${perfume.description} Features top notes of ${perfume.topNotes}. Free Express Cash on Delivery in Pakistan with complimentary 2ml trial vial.`,
+    description: `${perfume.name}: ${perfume.description} Features top notes of ${perfume.topNotes}. Express Cash on Delivery across Pakistan with complimentary 2ml trial vial.`,
     openGraph: {
       title: `${perfume.name} | Aura Haute Parfumerie`,
       description: perfume.description,

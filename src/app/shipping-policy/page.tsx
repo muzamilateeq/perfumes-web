@@ -40,16 +40,16 @@ export default function ShippingPolicyPage() {
                   01
                 </span>
                 <h2 className="font-serif text-2xl font-normal text-zinc-950">
-                  Complimentary Express Shipping
+                  Nationwide Express Courier Shipping
                 </h2>
               </div>
               <p className="mb-4">
-                We provide <strong>100% complimentary express shipping</strong> on all orders of 50ml Extrait de Parfum flacons and Discovery Coffrets nationwide across Pakistan. There are zero hidden courier surcharges or packaging handling fees.
+                We partner with premier tracked courier services (TCS, Trax, Leopards, Call Courier) across Pakistan. Every order is packed in temperature-controlled, shock-absorbent cushioning to ensure your flacon arrives in pristine condition.
               </p>
               <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-sm">
-                <span className="font-semibold text-zinc-900 block text-xs uppercase tracking-wider mb-1">Standard Rates:</span>
+                <span className="font-semibold text-zinc-900 block text-xs uppercase tracking-wider mb-1">Standard Courier Rates:</span>
                 <ul className="space-y-1 text-xs text-zinc-600">
-                  <li>• Orders containing 50ml Flacons or Discovery Coffrets: <strong>FREE (PKR 0)</strong></li>
+                  <li>• Standard Nationwide Courier Delivery: <strong>PKR 250</strong> (flat fee calculated at checkout).</li>
                   <li>• Nationwide delivery covers Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, Quetta, Sialkot, and all regional courier service areas.</li>
                 </ul>
               </div>

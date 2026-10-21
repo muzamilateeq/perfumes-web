@@ -40,7 +40,7 @@ export default function TermsPage() {
             <div className="pt-6 border-t border-zinc-200">
               <h2 className="font-serif text-xl font-bold text-zinc-950 mb-3">2. Pricing & Currency</h2>
               <p>
-                All prices displayed on Aura Fragrances are in Pakistani Rupees (PKR) and include complimentary express nationwide delivery. Prices are subject to periodic review in accordance with raw botanical essence import costs from France and Southeast Asia.
+                All prices displayed on Aura Fragrances are in Pakistani Rupees (PKR). Standard nationwide courier delivery fee is calculated clearly at checkout prior to order confirmation. Prices are subject to periodic review in accordance with raw botanical essence import costs from France and Southeast Asia.
               </p>
             </div>
 

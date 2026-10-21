@@ -122,7 +122,7 @@ export function generateProductWhatsAppMessage(
     `💵 *Price:* *${product.price}*`,
     `🌿 *Notes:* ${product.notes}`,
     "━━━━━━━━━━━━━━━━━━━━━━━━━",
-    "🚚 *Delivery:* Free Express Shipping Nationwide (COD)",
+    "🚚 *Delivery:* Express Courier Delivery Nationwide (COD)",
     "🎁 *Vial:* Free 2ml Tester Included",
   ];
 

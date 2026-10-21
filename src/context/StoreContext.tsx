@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { PerfumeItem, PERFUMES_DATA, DISCOVERY_SET_ITEM } from "@/lib/perfumes";
+import { StoreSettings, DEFAULT_STORE_SETTINGS } from "@/lib/storeTypes";
 
 export interface CartItem {
   product: PerfumeItem;
@@ -9,6 +10,10 @@ export interface CartItem {
 }
 
 interface StoreContextType {
+  // Settings
+  settings: StoreSettings;
+  updateSettings: (newSettings: Partial<StoreSettings>) => void;
+
   // Wishlist
   wishlist: number[];
   wishlistItems: PerfumeItem[];
@@ -44,8 +49,10 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 const WISHLIST_STORAGE_KEY = "aura_perfumes_wishlist_v1";
 const CART_STORAGE_KEY = "aura_perfumes_cart_v1";
+const SETTINGS_STORAGE_KEY = "aura_perfumes_settings_v1";
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
+  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
@@ -57,6 +64,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Initialize from LocalStorage
   useEffect(() => {
     try {
+      const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (savedSettings) {
+        setSettings((prev) => ({ ...prev, ...JSON.parse(savedSettings) }));
+      }
+
       const savedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
       if (savedWishlist) {
         setWishlist(JSON.parse(savedWishlist));
@@ -70,6 +82,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       console.error("Failed to load store data from localStorage", e);
     }
   }, []);
+
+  const updateSettings = (newSettings: Partial<StoreSettings>) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      try {
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to save settings", e);
+      }
+      return updated;
+    });
+  };
 
   // Persist Wishlist
   const saveWishlist = (items: number[]) => {
@@ -192,6 +216,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   return (
     <StoreContext.Provider
       value={{
+        settings,
+        updateSettings,
+
         wishlist,
         wishlistItems,
         wishlistCount: wishlist.length,

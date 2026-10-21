@@ -82,7 +82,7 @@ export default function DiscoveryPage() {
     `Product: *Aura Discovery Coffret (6 x 5ml Glass Atomizers)*\n` +
     `Price: *PKR 3,500*\n` +
     `Voucher: 100% Redeemable (PKR 3,500 toward any 50ml flacon)\n` +
-    `Delivery: Free Express Nationwide (COD)\n` +
+    `Delivery: Express Nationwide Courier (COD)\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `Hello! I would like to order the Discovery Box. Please share delivery details.`
   );
@@ -119,7 +119,7 @@ export default function DiscoveryPage() {
                 </div>
                 <div>
                   <span className="font-serif text-2xl sm:text-3xl font-light text-[#E0C79F]">PKR 3,500</span>
-                  <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">100% Free Shipping</span>
+                  <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">Express Courier COD</span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <span className="font-serif text-2xl sm:text-3xl font-light text-emerald-400">100%</span>
@@ -265,7 +265,7 @@ export default function DiscoveryPage() {
                 <span className="font-mono text-2xl font-light text-[#8C7355] block mb-3">01</span>
                 <h4 className="font-serif text-lg font-bold text-zinc-950 mb-2">Order Discovery Box</h4>
                 <p className="text-xs text-zinc-600 font-light leading-relaxed">
-                  Receive the 6 x 5ml luxury coffret with complimentary nationwide express shipping for PKR 4,500.
+                  Receive the 6 x 5ml luxury coffret with express nationwide delivery for PKR 3,500.
                 </p>
               </div>
 
@@ -281,7 +281,7 @@ export default function DiscoveryPage() {
                 <span className="font-mono text-2xl font-light text-[#8C7355] block mb-3">03</span>
                 <h4 className="font-serif text-lg font-bold text-zinc-950 mb-2">Deduct 100% of Price</h4>
                 <p className="text-xs text-zinc-600 font-light leading-relaxed">
-                  Use your enclosed voucher code to deduct the entire PKR 4,500 from your first full 50ml flacon purchase.
+                  Use your enclosed voucher code to deduct the entire PKR 3,500 from your first full 50ml flacon purchase.
                 </p>
               </div>
             </div>
@@ -299,7 +299,7 @@ export default function DiscoveryPage() {
                 Order Your Discovery Coffret
               </h3>
               <p className="text-xs text-zinc-500 mt-1.5 sm:mt-2">
-                PKR 3,500 • Cash on Delivery Nationwide • Free Delivery
+                PKR 3,500 • Cash on Delivery Nationwide • Express Courier Delivery
               </p>
             </div>
 

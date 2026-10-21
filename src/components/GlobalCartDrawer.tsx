@@ -28,6 +28,7 @@ import { buildWhatsAppUrl, generateConfirmedOrderWhatsAppMessage } from "@/lib/w
 
 export default function GlobalCartDrawer() {
   const { 
+    settings,
     cart, 
     cartCount, 
     cartTotal, 
@@ -68,7 +69,10 @@ export default function GlobalCartDrawer() {
   const giftBoxPrice = includeGiftBox ? 500 : 0;
   const subtotalWithGift = cartTotal + giftBoxPrice;
   const discount = appliedCoupon?.discountAmount || 0;
-  const finalTotal = Math.max(0, subtotalWithGift - discount);
+  const isFreeShipping = Boolean(settings?.freeShippingEnabled) || 
+    (Boolean(settings?.freeDeliveryThreshold && settings.freeDeliveryThreshold > 0) && subtotalWithGift >= settings.freeDeliveryThreshold);
+  const deliveryCharges = cart.length === 0 ? 0 : (isFreeShipping ? 0 : (settings?.deliveryCharges ?? 250));
+  const finalTotal = Math.max(0, subtotalWithGift - discount + deliveryCharges);
 
   // Apply Coupon Handler
   const handleApplyCoupon = async (e: React.FormEvent) => {
@@ -126,6 +130,7 @@ export default function GlobalCartDrawer() {
           price: it.product.priceNum,
           quantity: it.quantity,
         })),
+        shippingFee: deliveryCharges,
         total: finalTotal,
       });
 
@@ -253,9 +258,11 @@ export default function GlobalCartDrawer() {
                       <span className="text-zinc-500">Total Amount:</span>
                       <span className="font-bold text-zinc-950">PKR {orderConfirmed.total.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-emerald-700">
+                    <div className="flex justify-between items-center text-xs text-zinc-700">
                       <span>Delivery:</span>
-                      <span className="font-bold">Complimentary Express (COD)</span>
+                      <span className="font-bold">
+                        {deliveryCharges > 0 ? `PKR ${deliveryCharges.toLocaleString()} (COD)` : "Complimentary Express (COD)"}
+                      </span>
                     </div>
                   </div>
 
@@ -422,6 +429,14 @@ export default function GlobalCartDrawer() {
                         <span>-PKR {discount.toLocaleString()}</span>
                       </div>
                     )}
+                    <div className="flex justify-between text-zinc-600">
+                      <span>Delivery / Courier:</span>
+                      {deliveryCharges > 0 ? (
+                        <span className="font-semibold text-zinc-900">PKR {deliveryCharges.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-emerald-700 font-bold uppercase text-[10px]">Free</span>
+                      )}
+                    </div>
                     <div className="flex justify-between text-zinc-950 font-bold text-sm pt-1 border-t border-zinc-200">
                       <span>Total Payable:</span>
                       <span className="text-[#8C7355]">PKR {finalTotal.toLocaleString()}</span>
@@ -619,7 +634,7 @@ export default function GlobalCartDrawer() {
                   <div className="p-3 bg-zinc-100/60 rounded-xs space-y-2 text-[11px] text-zinc-600 font-light">
                     <div className="flex items-center gap-2">
                       <Truck className="w-3.5 h-3.5 text-[#8C7355] shrink-0" />
-                      <span>Complimentary Express Delivery Nationwide (COD)</span>
+                      <span>Express Nationwide Courier Delivery (COD)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-3.5 h-3.5 text-[#8C7355] shrink-0" />
@@ -648,10 +663,16 @@ export default function GlobalCartDrawer() {
                   )}
 
                   <div className="flex justify-between text-zinc-600">
-                    <span>Shipping:</span>
-                    <span className="text-emerald-700 font-bold uppercase text-[10px]">
-                      Complimentary Express
-                    </span>
+                    <span>Delivery / Shipping:</span>
+                    {deliveryCharges > 0 ? (
+                      <span className="font-semibold text-zinc-900">
+                        PKR {deliveryCharges.toLocaleString()}
+                      </span>
+                    ) : (
+                      <span className="text-emerald-700 font-bold uppercase text-[10px]">
+                        Free
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex justify-between text-zinc-950 font-bold text-sm pt-2 border-t border-zinc-100">

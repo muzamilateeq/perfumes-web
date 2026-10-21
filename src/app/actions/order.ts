@@ -21,6 +21,7 @@ export interface OrderInput {
   notes?: string;
   couponCode?: string;
   discountAmount?: number;
+  shippingFee?: number;
   items: {
     productId?: number | string;
     name: string;
@@ -45,6 +46,7 @@ export async function createOrderAction(data: OrderInput) {
     notes: data.notes || undefined,
     couponCode: data.couponCode || undefined,
     discountAmount: data.discountAmount || 0,
+    shippingFee: data.shippingFee || 0,
     total: data.total,
     status: "PENDING",
     items: data.items,

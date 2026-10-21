@@ -66,7 +66,7 @@ export default function SiteFooter() {
               Client Service
             </span>
             <ul className="space-y-2.5 sm:space-y-3 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-              <li><Link href="/shipping-policy" className="hover:text-zinc-950 transition-colors">Free Express Shipping</Link></li>
+              <li><Link href="/shipping-policy" className="hover:text-zinc-950 transition-colors">Express Shipping & Delivery</Link></li>
               <li><Link href="/refund-policy" className="hover:text-zinc-950 transition-colors">Trial Vial & Returns</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-zinc-950 transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-zinc-950 transition-colors">Terms of Service</Link></li>

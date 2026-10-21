@@ -2216,6 +2216,81 @@ export default function AdminDashboardClient({
                 </div>
               </div>
 
+              {/* Delivery Charges & Courier Policy */}
+              <div className="p-6 rounded-xl bg-white border border-zinc-200 shadow-xs space-y-4">
+                <div className="flex items-center gap-3 pb-4 border-b border-zinc-100">
+                  <div className="p-2.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-lg font-light text-zinc-950">
+                      Courier Delivery Charges & Shipping Policy
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Configure standard shipping rates charged to clients at checkout across Pakistan
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      Standard Delivery Fee (PKR)
+                    </label>
+                    <input
+                      type="number"
+                      value={settings.deliveryCharges ?? 250}
+                      onChange={(e) => setSettings({ ...settings, deliveryCharges: parseInt(e.target.value, 10) || 0 })}
+                      placeholder="250"
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none font-serif"
+                    />
+                    <span className="text-[10px] text-zinc-400 mt-1 block">Standard courier rate (e.g. 250)</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      Free Delivery Threshold (PKR)
+                    </label>
+                    <input
+                      type="number"
+                      value={settings.freeDeliveryThreshold ?? 0}
+                      onChange={(e) => setSettings({ ...settings, freeDeliveryThreshold: parseInt(e.target.value, 10) || 0 })}
+                      placeholder="0"
+                      className="w-full px-4 py-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 focus:bg-white focus:border-zinc-950 focus:outline-none font-serif"
+                    />
+                    <span className="text-[10px] text-zinc-400 mt-1 block">Free delivery above this cart amount (0 = disabled)</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold tracking-widest uppercase text-zinc-600 mb-1.5">
+                      100% Free Shipping Override
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, freeShippingEnabled: !settings.freeShippingEnabled })}
+                      className={`w-full h-10 px-4 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border cursor-pointer ${
+                        settings.freeShippingEnabled
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                          : "bg-zinc-100 text-zinc-700 border-zinc-300 hover:bg-zinc-200"
+                      }`}
+                    >
+                      {settings.freeShippingEnabled ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>Always Free Shipping (ON)</span>
+                        </>
+                      ) : (
+                        <>
+                          <Truck className="w-4 h-4 text-zinc-600" />
+                          <span>Delivery Fee Active (PKR {settings.deliveryCharges ?? 250})</span>
+                        </>
+                      )}
+                    </button>
+                    <span className="text-[10px] text-zinc-400 mt-1 block">Toggle anytime without changing code</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Submit */}
               <div className="flex justify-end">
                 <button

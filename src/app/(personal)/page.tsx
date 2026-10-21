@@ -248,7 +248,7 @@ export default function LuxuryBrandStorefront() {
           <div className="flex items-start gap-2.5 sm:gap-4">
             <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900 shrink-0 mt-0.5" strokeWidth={1.5} />
             <div>
-              <p className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-zinc-950">Free Express Delivery</p>
+              <p className="text-[11px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-zinc-950">Express Courier Delivery</p>
               <p className="text-[10px] sm:text-xs text-zinc-500 font-light mt-0.5">Nationwide within 48-72 hrs</p>
             </div>
           </div>

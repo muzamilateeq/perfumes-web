@@ -5,6 +5,8 @@ export interface StoreSettings {
   announcementTicker: string;
   tickerActive: boolean;
   freeShippingEnabled: boolean;
+  deliveryCharges: number;
+  freeDeliveryThreshold: number;
   discoveryPrice: number;
   codEnabled: boolean;
   mobileWalletsEnabled: boolean;
@@ -49,6 +51,7 @@ export interface StoreOrder {
   paymentMethod: string;
   notes?: string;
   total: number;
+  shippingFee?: number;
   couponCode?: string;
   discountAmount?: number;
   status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
@@ -91,9 +94,11 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: "Aura Haute Parfumerie",
   whatsappNumber: "03098541632",
   supportPhone: "+92 309 8541632",
-  announcementTicker: "COMPLIMENTARY EXPRESS DELIVERY NATIONWIDE • CASH ON DELIVERY (COD) • 100% EXTRAIT DE PARFUM (30%+ OIL) • FREE TESTER VIAL INCLUDED",
+  announcementTicker: "EXPRESS NATIONWIDE COURIER DELIVERY (COD) • 100% EXTRAIT DE PARFUM (30%+ OIL) • MATCHING 2ML TESTER VIAL INCLUDED",
   tickerActive: true,
-  freeShippingEnabled: true,
+  freeShippingEnabled: false,
+  deliveryCharges: 250,
+  freeDeliveryThreshold: 0,
   discoveryPrice: 3500,
   codEnabled: true,
   mobileWalletsEnabled: true,

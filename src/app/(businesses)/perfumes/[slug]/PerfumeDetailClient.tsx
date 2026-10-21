@@ -150,7 +150,10 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
   const [orderSuccess, setOrderSuccess] = useState<boolean>(false);
   const [orderId, setOrderId] = useState<string>("");
 
-  const totalPrice = perfume.priceNum * quantity;
+  const isFreeShipping = Boolean(store.settings?.freeShippingEnabled) ||
+    (Boolean(store.settings?.freeDeliveryThreshold && store.settings.freeDeliveryThreshold > 0) && perfume.priceNum * quantity >= store.settings.freeDeliveryThreshold);
+  const deliveryCharges = isFreeShipping ? 0 : (store.settings?.deliveryCharges ?? 250);
+  const totalPrice = perfume.priceNum * quantity + deliveryCharges;
 
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -768,7 +771,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
                   <div className="p-3.5 sm:p-4 bg-zinc-50 border border-zinc-200 flex justify-between items-center text-xs">
                     <div>
                       <span className="font-semibold text-zinc-900 block">{perfume.name} x {quantity}</span>
-                      <span className="text-zinc-500 text-[11px]">{perfume.volume} • Free Delivery</span>
+                      <span className="text-zinc-500 text-[11px]">{perfume.volume} • Courier Delivery: {deliveryCharges > 0 ? `PKR ${deliveryCharges.toLocaleString()}` : "Free"}</span>
                     </div>
                     <span className="font-serif text-lg sm:text-xl font-bold text-zinc-950">PKR {totalPrice.toLocaleString()}</span>
                   </div>
@@ -864,7 +867,7 @@ export default function PerfumeDetailClient({ perfume, relatedPerfumes, settings
                   </button>
 
                   <p className="text-[11px] text-zinc-400 text-center tracking-wider">
-                    🔒 Free Delivery Nationwide • Free Matching Tester Vial Included
+                    🔒 Express Nationwide Delivery (COD) • Free Matching Tester Vial Included
                   </p>
                 </form>
               )}

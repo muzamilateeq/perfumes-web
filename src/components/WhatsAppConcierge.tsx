@@ -189,7 +189,7 @@ export default function WhatsAppConcierge({
                       </span>
                     </div>
                     <p className="text-[11px] text-zinc-300 font-light mb-3">
-                      Order your bag items directly via WhatsApp with free express Cash on Delivery.
+                      Order your bag items directly via WhatsApp with express Cash on Delivery.
                     </p>
                     <button
                       onClick={handleOrderCartOnWhatsApp}
